@@ -4,5 +4,6 @@
 public class JDBCMain {
     public static void main(String[] args) {
         System.out.println("Hello projet Bd Team");
+        System.out.println("Second Hello");
     }
 }
