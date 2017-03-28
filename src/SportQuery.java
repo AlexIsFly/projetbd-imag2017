@@ -10,13 +10,7 @@ public class SportQuery {
     static final String PASSWD = "gacela";
 
     static final String PRE_STMT1 =
-            "select min(hiredate),max(hiredate) from emp";
-
-    static final String PRE_STMT2 =
-            "select ename,hiredate from emp where to_char(hiredate,'DD-MM-YY') = ?";
-
-    static final String PRE_STMT3 =
-            "select ename,hiredate from emp where hiredate > ?";
+            "select * from sport";
 
     public SportQuery() {
         try {
@@ -45,12 +39,21 @@ public class SportQuery {
 
             ResultSet rset = stmt.executeQuery();
 
+            while (rset.next ()) {
+                System.out.println (
+                        " Nom Sport " + rset.getString ( "nomSport" )
+                                + " -> Tarif Stage : " + rset.getString( "tarifStage" )
+                );
+            }
             // Fermeture
 
             rset.close();
+            System.out.println("closing result set");
             stmt.close();
-
+            System.out.println("closing statement");
             conn.close();
+            System.out.println("closing connection");
+
 
         } catch (SQLException e) {
             System.err.println("failed");
