@@ -4,10 +4,10 @@ import java.sql.*;
  * Created by gacela on 3/28/17.
  */
 public class SportQuery {
-    static final String CONN_URL = "jdbc:oracle:thin:@ensioracle1.imag.fr:1521:ensioracle1";
+    static final String CONN_URL = "jdbc:oracle:thin:[gacela/gacela]@ensioracle1.imag.fr:1521:ensioracle1";
 
-    static final String USER = "scott";
-    static final String PASSWD = "tiger";
+    static final String USER = "gacela";
+    static final String PASSWD = "gacela";
 
     static final String PRE_STMT1 =
             "select min(hiredate),max(hiredate) from emp";
