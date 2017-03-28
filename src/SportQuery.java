@@ -1,43 +1,28 @@
+import ui.SportTable;
+
+import javax.swing.*;
+import java.awt.*;
 import java.sql.*;
 
 /**
  * Created by gacela on 3/28/17.
  */
-public class SportQuery {
-    static final String CONN_URL = "jdbc:oracle:thin:[gacela/gacela]@ensioracle1.imag.fr:1521:ensioracle1";
+public class SportQuery extends JFrame {
 
-    static final String USER = "gacela";
-    static final String PASSWD = "gacela";
 
     static final String PRE_STMT1 =
             "select * from sport";
+    Connection connection;
 
-    public SportQuery() {
+    public SportQuery(ConnectionBD connectionBD) {
         try {
-
+            connection = connectionBD.getConnection();
             // Enregistrement du driver Oracle
 
-            System.out.print("Loading Oracle driver... ");
-            DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-            System.out.println("loaded");
-
-            // Etablissement de la connection
-
-            System.out.print("Connecting to the database... ");
-            Connection conn = DriverManager.getConnection(CONN_URL, USER, PASSWD);
-            System.out.println("connected");
-
-         /* Recherche de la date d'embauche la plus ancienne et
-          * de la plus récente dans la table EMP
-          */
-
-            // Creation de la requete
-
-            PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
-
-            // Execution de la requete
-
-            ResultSet rset = stmt.executeQuery();
+            ResultSet rset = getContentsSport();
+            SportTable sportTable = new SportTable(rset);
+            JTable table = new JTable();
+            table.setModel(sportTable);
 
             while (rset.next ()) {
                 System.out.println (
@@ -45,13 +30,25 @@ public class SportQuery {
                                 + " -> Tarif Stage : " + rset.getString( "tarifStage" )
                 );
             }
-            // Fermeture
 
+            Container contentPane = getContentPane();
+            contentPane.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+            contentPane.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.CENTER;
+            c.weightx = 0.5;
+            c.weighty = 1.0;
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 2;
+            contentPane.add(new JScrollPane(table), c);
+
+            // Fermeture
             rset.close();
             System.out.println("closing result set");
-            stmt.close();
-            System.out.println("closing statement");
-            conn.close();
+            connection.close();
             System.out.println("closing connection");
 
 
@@ -59,5 +56,17 @@ public class SportQuery {
             System.err.println("failed");
             e.printStackTrace(System.err);
         }
+    }
+
+    public ResultSet getContentsSport() throws SQLException {
+
+        PreparedStatement stmt = connection.prepareStatement(PRE_STMT1,
+                ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_READ_ONLY);
+        //PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+
+        // Execution de la requete
+
+        ResultSet rset = stmt.executeQuery();
+        return rset;
     }
 }
