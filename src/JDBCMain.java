@@ -1,9 +1,9 @@
+import javax.swing.*;
 /**
  * Created by gacela on 3/22/17.
  */
 public class JDBCMain {
     public static void main(String[] args) {
-        System.out.println("Hello projet Bd Team");
-        System.out.println("Second Hello");
+        SportQuery sportQuery = new SportQuery();
     }
 }
