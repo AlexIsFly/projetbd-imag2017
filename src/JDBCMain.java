@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.sql.*;
 
 public class JDBCMain {
@@ -8,7 +9,9 @@ public class JDBCMain {
     static final String PRE_STMT = "select * from emp";
     
     public static void main(String[] args) {
-    	Connexion connec = new Connexion();
     	
+        SportQuery sportQuery = new SportQuery();
+        Connexion connec = new Connexion();
+
     }
 }
