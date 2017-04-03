@@ -29,17 +29,14 @@ public class SportTable implements TableModel {
         this.sportRowSet.beforeFirst();
     }
 
-    @Override
     public int getRowCount() {
         return numrows;
     }
 
-    @Override
     public int getColumnCount() {
         return numcols;
     }
 
-    @Override
     public String getColumnName(int columnIndex) {
         try {
             return metadata.getColumnLabel(columnIndex+1);
@@ -49,7 +46,6 @@ public class SportTable implements TableModel {
         }
     }
 
-    @Override
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 1 : return String.class;
@@ -58,12 +54,10 @@ public class SportTable implements TableModel {
         }
     }
 
-    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
     }
 
-    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         try {
             this.sportRowSet.absolute(rowIndex + 1);
@@ -77,17 +71,14 @@ public class SportTable implements TableModel {
         }
     }
 
-    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
     }
 
-    @Override
     public void addTableModelListener(TableModelListener l) {
 
     }
 
-    @Override
     public void removeTableModelListener(TableModelListener l) {
 
     }

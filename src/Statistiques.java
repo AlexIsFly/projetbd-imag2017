@@ -13,11 +13,11 @@ public class Statistiques {
 		Statement ratio = null;
 		Statement recettes = null;
 		
-		String inscritsStr = "";
-		String stagiairesStr = "";
-		String terrainsStr = "";
-		String ratioStr = "";
-		String recettesStr = "";
+		final String inscritsStr = "";
+		final String stagiairesStr = "";
+		final String terrainsStr = "";
+		final String ratioStr = "";
+		final String recettesStr = "";
 		
 		try {
 			con.setAutoCommit(true);

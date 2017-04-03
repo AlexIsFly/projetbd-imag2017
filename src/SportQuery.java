@@ -26,7 +26,7 @@ public class SportQuery extends JFrame {
 
             while (rset.next ()) {
                 System.out.println (
-                        " Nom Sport " + rset.getString ( "nomSport" )
+                        " Nom Sport : " + rset.getString ( "nomSport" )
                                 + " -> Tarif Stage : " + rset.getString( "tarifStage" )
                 );
             }
