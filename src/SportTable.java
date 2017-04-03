@@ -1,5 +1,3 @@
-package ui;
-
 import javax.sql.RowSetListener;
 import javax.sql.rowset.CachedRowSet;
 import javax.swing.event.TableModelListener;
