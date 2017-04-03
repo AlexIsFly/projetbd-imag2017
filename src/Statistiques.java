@@ -46,7 +46,7 @@ public class Statistiques {
 	            }
 	        }
 	    } finally {
-	        //Affichage des résultats sur l'interface graphique
+	        //Affichage des r?sultats sur l'interface graphique
 	        con.setAutoCommit(true);
 	    }
 	}

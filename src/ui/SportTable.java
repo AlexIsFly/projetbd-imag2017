@@ -67,7 +67,9 @@ public class SportTable implements TableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         try {
+            System.out.println("Pre Absolute"+rowIndex);
             this.sportRowSet.absolute(rowIndex + 1);
+            System.out.println("Post Absolute"+rowIndex);
             Object o = this.sportRowSet.getObject(columnIndex + 1);
             if (o == null)
                 return null;
