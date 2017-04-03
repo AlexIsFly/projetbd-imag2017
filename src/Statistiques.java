@@ -1,9 +1,33 @@
 import java.sql.*;
+import javax.swing.*;
 
-public class Statistiques {
+public class Statistiques extends JPanel{
+	
+	private int nbInscrits;
+	private int nbStagiaires;
+	private String[][] listTerrains;
+	private float ratio;
+	private int recettes;
+	
+	ConnectionBD conn;
+	JLabel inscritsLabel1;
+	JLabel inscritsLabel2;
+	JLabel stagiairesLabel1;
+	JLabel stagiairesLabel2;
+	JLabel terrainsLabel1;
+	JLabel terrainsLabel2;
+	JLabel ratioLabel1;
+	JLabel ratioLabel2;
+	JLabel recettesLabel1;
+	JLabel recettesLabel2;
+	
+	public Statistiques() {
+		// TODO Auto-generated constructor stub
+	}
 	
 	
-	public int calculInscrits() throws SQLException {
+	//Renvoie -1 si erreur
+ 	public int calculInscrits() throws SQLException {
 		
 		ConnectionBD connection = new ConnectionBD();
 		Connection con = connection.getConnection();
@@ -39,8 +63,7 @@ public class Statistiques {
 	    }
 	}
 	
-
-	
+ 	//Renvoie -1 si erreur
 	public int calculStagiaires() throws SQLException {
 			//Renvoie le nombre total de stagiaires, -1 si erreur
 		
@@ -77,7 +100,6 @@ public class Statistiques {
 		        con.setAutoCommit(true);
 		    }
 		}
-	
 	
 	//Renvoie un tableau à 2 dimensions contenant la commune puis le nom des 5 terrains les plus utilisés
 	public String[][] calculTerrains() throws SQLException {
@@ -125,6 +147,7 @@ public class Statistiques {
 	    }
 	}
 	
+	//Renvoie -1 si erreur
 	public float calculRatio() throws SQLException {
 			
 			ConnectionBD connection = new ConnectionBD();
@@ -163,8 +186,8 @@ public class Statistiques {
 		    }
 	}
 
+	//Renvoie -1 si erreur
 	public int calculRecettes() throws SQLException {
-		//Renvoie -1 si erreur
 		
 		ConnectionBD connection = new ConnectionBD();
 		Connection con = connection.getConnection();
