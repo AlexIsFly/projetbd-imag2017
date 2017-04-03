@@ -15,19 +15,30 @@ public class RajoutStageUI extends JPanel {
     public RajoutStageUI() {
         this.connectionBD = new ConnectionBD();
 
-        this.sportList = new JComboBox<String>();
-        this.sportLabel = new JLabel("Sport");
+        try {
+            String[] sports = getSportList();
+            this.sportList = new JComboBox<String>(sports);
+            this.sportLabel = new JLabel("Sport");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         add(this.sportLabel);
         add(this.sportList);
     }
 
     private String[] getSportList() throws SQLException {
         Connection connection = connectionBD.getConnection();
-
+        String[] sports = new String[100];
+        int i = 0;
         String PRE_STMT1 = "select nomSport from sport";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
-        return null;
+        while (rset.next()) {
+            sports[i]=rset.getString(1);
+            i++;
+        }
+        return sports;
 
     }
 }
