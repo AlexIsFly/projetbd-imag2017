@@ -16,18 +16,76 @@ public class Statistiques extends JPanel{
 	JLabel stagiairesLabel2;
 	JLabel terrainsLabel1;
 	JLabel terrainsLabel2;
+	JLabel terrainsLabel3;
+	JLabel terrainsLabel4;
 	JLabel ratioLabel1;
 	JLabel ratioLabel2;
 	JLabel recettesLabel1;
 	JLabel recettesLabel2;
 	
 	public Statistiques() {
-		// TODO Auto-generated constructor stub
+		this.conn = new ConnectionBD();
+		
+		this.inscritsLabel1 = new JLabel("Nombre moyen d'inscrits par stage : ");
+		this.stagiairesLabel1 = new JLabel("Nombre total de stagiaires : ");
+		this.terrainsLabel1 = new JLabel("Terrains les plus utilisés : ");
+		this.ratioLabel1 = new JLabel("Ratio supervision/encadrement des moniteurs : ");
+		this.recettesLabel1 = new JLabel("Recettes totales : ");
+		
+		afficheStats();
+	}
+	
+	private void afficheStats() {
+		
+		calculStats();
+		
+		Box b1 = Box.createHorizontalBox();
+	    b1.add(this.inscritsLabel1);
+	    this.inscritsLabel2 = new JLabel(String.valueOf(nbInscrits));
+	    b1.add(this.inscritsLabel2);
+		
+	    Box b2 = Box.createHorizontalBox();
+		b2.add(this.stagiairesLabel1);
+		this.stagiairesLabel2 = new JLabel(String.valueOf(nbStagiaires));
+		b2.add(this.stagiairesLabel2);
+		
+		Box b3 = Box.createHorizontalBox();
+		b3.add(this.terrainsLabel1);
+		this.terrainsLabel2 = new JLabel(listTerrains[0][0]+listTerrains[0][1]);
+		b3.add(this.terrainsLabel2);
+		this.terrainsLabel3 = new JLabel(listTerrains[1][0]+listTerrains[1][1]);
+		b3.add(this.terrainsLabel3);
+		this.terrainsLabel4 = new JLabel(listTerrains[2][0]+listTerrains[2][1]);
+		b3.add(this.terrainsLabel4);
+		
+		Box b4 = Box.createHorizontalBox();
+		b4.add(this.ratioLabel1);
+		this.ratioLabel2 = new JLabel(String.valueOf(ratio));
+		b4.add(this.ratioLabel2);
+		
+		Box b5 = Box.createHorizontalBox();
+		b5.add(this.recettesLabel1);
+		this.recettesLabel2 = new JLabel(String.valueOf(recettes));
+		b5.add(this.recettesLabel2);
 	}
 	
 	
+	private void calculStats() {
+		
+		try {
+			this.nbInscrits=calculInscrits();
+			this.nbStagiaires=calculStagiaires();
+			this.listTerrains=calculTerrains();
+			this.ratio=calculRatio();
+			this.recettes=calculRecettes();
+		} catch (SQLException e ){
+			//Exceptions levées par le setAutoCommit ?
+			System.err.println(("setAutoCommit error"));
+		}
+	}
+	
 	//Renvoie -1 si erreur
- 	public int calculInscrits() throws SQLException {
+ 	private int calculInscrits() throws SQLException {
 		
 		ConnectionBD connection = new ConnectionBD();
 		Connection con = connection.getConnection();
@@ -64,7 +122,7 @@ public class Statistiques extends JPanel{
 	}
 	
  	//Renvoie -1 si erreur
-	public int calculStagiaires() throws SQLException {
+	private int calculStagiaires() throws SQLException {
 			//Renvoie le nombre total de stagiaires, -1 si erreur
 		
 			ConnectionBD connection = new ConnectionBD();
@@ -101,8 +159,8 @@ public class Statistiques extends JPanel{
 		    }
 		}
 	
-	//Renvoie un tableau à 2 dimensions contenant la commune puis le nom des 5 terrains les plus utilisés
-	public String[][] calculTerrains() throws SQLException {
+	//Renvoie un tableau à 2 dimensions contenant la commune puis le nom des 3 terrains les plus utilisés
+	private String[][] calculTerrains() throws SQLException {
 		
 		ConnectionBD connection = new ConnectionBD();
 		Connection con = connection.getConnection();
@@ -122,7 +180,7 @@ public class Statistiques extends JPanel{
 			String[][] listTerrains = new String[5][2];
 			if (terrainsRes != null) {
 				int i=0;
-				while (i<5 && terrainsRes.next()) {
+				while (i<3 && terrainsRes.next()) {
 					listTerrains[i][0]=terrainsRes.getString(1); //Commune
 					listTerrains[i][1]=terrainsRes.getString(2); //Nom terrain
 					terrainsRes.next();
@@ -148,7 +206,7 @@ public class Statistiques extends JPanel{
 	}
 	
 	//Renvoie -1 si erreur
-	public float calculRatio() throws SQLException {
+	private float calculRatio() throws SQLException {
 			
 			ConnectionBD connection = new ConnectionBD();
 			Connection con = connection.getConnection();
@@ -187,7 +245,7 @@ public class Statistiques extends JPanel{
 	}
 
 	//Renvoie -1 si erreur
-	public int calculRecettes() throws SQLException {
+	private int calculRecettes() throws SQLException {
 		
 		ConnectionBD connection = new ConnectionBD();
 		Connection con = connection.getConnection();
