@@ -1,5 +1,6 @@
 package ui;
 
+import javax.sql.RowSetListener;
 import javax.sql.rowset.CachedRowSet;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -78,9 +79,10 @@ public class SportTable implements TableModel {
     }
 
     @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-
+    public void setValueAt(Object value, int row, int column) {
+        System.out.println("Calling setValueAt row " + row + ", column " + column);
     }
+
 
     @Override
     public void addTableModelListener(TableModelListener l) {
