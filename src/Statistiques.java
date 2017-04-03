@@ -13,11 +13,11 @@ public class Statistiques {
 		Statement ratio = null;
 		Statement recettes = null;
 		
-		String inscritsStr = "";
-		String stagiairesStr = "";
-		String terrainsStr = "";
-		String ratioStr = "";
-		String recettesStr = "";
+		final String inscritsStr = "";
+		final String stagiairesStr = "";
+		final String terrainsStr = "";
+		final String ratioStr = "";
+		final String recettesStr = "";
 		
 		try {
 			con.setAutoCommit(true);
@@ -46,7 +46,7 @@ public class Statistiques {
 	            }
 	        }
 	    } finally {
-	        //Affichage des r?sultats sur l'interface graphique
+	        //Affichage des résultats sur l'interface graphique
 	        con.setAutoCommit(true);
 	    }
 	}
