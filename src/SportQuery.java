@@ -15,6 +15,9 @@ public class SportQuery extends JFrame {
     Connection connection;
 
     public SportQuery(ConnectionBD connectionBD) {
+
+        super("Sport Table");
+
         try {
             connection = connectionBD.getConnection();
             // Enregistrement du driver Oracle
@@ -23,6 +26,10 @@ public class SportQuery extends JFrame {
             SportTable sportTable = new SportTable(rset);
             JTable table = new JTable();
             table.setModel(sportTable);
+
+            JLabel label_name = new JLabel();
+            JLabel label_price = new JLabel();
+
 
             while (rset.next ()) {
                 System.out.println (

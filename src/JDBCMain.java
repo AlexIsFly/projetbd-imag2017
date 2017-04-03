@@ -6,5 +6,7 @@ public class JDBCMain {
     public static void main(String[] args) {
         ConnectionBD connect = new ConnectionBD();
         SportQuery sportQuery = new SportQuery(connect);
+        sportQuery.pack();
+        sportQuery.setVisible(true);
     }
 }
