@@ -10,7 +10,7 @@ public class ConnectionBD {
     static final String USER = "gacela";
     static final String PASSWD = "gacela";
 
-    Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         System.out.print("Loading Oracle driver... ");
         DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
         System.out.println("loaded");

@@ -1,5 +1,3 @@
-import ui.SportTable;
-
 import javax.sql.RowSetEvent;
 import javax.sql.RowSetListener;
 import javax.swing.*;
@@ -11,7 +9,7 @@ import java.sql.*;
 /**
  * Created by gacela on 3/28/17.
  */
-public class SportQuery extends JFrame implements RowSetListener {
+public class SportFrame extends JFrame implements RowSetListener {
 
 
     static final String PRE_STMT1 =
@@ -19,7 +17,7 @@ public class SportQuery extends JFrame implements RowSetListener {
     Connection connection;
     ResultSet rset;
 
-    public SportQuery(ConnectionBD connectionBD) {
+    public SportFrame(ConnectionBD connectionBD) {
 
         super("Sport Table");
 
@@ -50,6 +48,8 @@ public class SportQuery extends JFrame implements RowSetListener {
             JLabel label_name = new JLabel();
             JLabel label_price = new JLabel();
 
+            String[] data = {"one", "two", "three", "four"};
+            JComboBox<String> myList = new JComboBox<>(data);
 
             while (rset.next ()) {
                 System.out.println (
@@ -71,6 +71,15 @@ public class SportQuery extends JFrame implements RowSetListener {
             c.gridy = 0;
             c.gridwidth = 2;
             contentPane.add(new JScrollPane(table), c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.LINE_END;
+            c.weightx = 0.5;
+            c.weighty = 0;
+            c.gridx = 1;
+            c.gridy = 6;
+            c.gridwidth = 1;
+            contentPane.add(myList, c);
 
             // Fermeture
 
