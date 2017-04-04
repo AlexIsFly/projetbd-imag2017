@@ -63,4 +63,19 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("Hello "+petName);
         }
     }
+
+    private String [] getTerrainCommune() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String[] terrain_commune = new String[100];
+        int i = 0;
+        //String PRE_STMT1 = "select nomTerrain, commune from stage St where St.sport = " + map.get("sport");
+        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where sport =" + map.get("sport") + ") typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+        while (rset.next()) {
+            terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
+            i++;
+        }
+        return terrain_commune;
+    }
 }
