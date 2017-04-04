@@ -12,15 +12,17 @@ import java.util.HashMap;
  */
 public class RajoutStageUI extends JPanel implements ActionListener {
     ConnectionBD connectionBD;
+    HashMap<String, String> map;
+
     JComboBox<String> sportList;
     JLabel sportLabel;
-    HashMap<String, String> map;
-    JComboBox<String> communeList;
-    JLabel communeLabel;
+    JComboBox<String> terrainList;
+    JLabel terrainLabel;
 
     public RajoutStageUI() {
         this.connectionBD = new ConnectionBD();
         map = new HashMap<String, String>();
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         try {
             String[] sports = getSportList();
@@ -30,9 +32,14 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        this.terrainList = new JComboBox<String>();
+        this.terrainLabel = new JLabel("Terrain");
+
 
         add(this.sportLabel);
         add(this.sportList);
+        add(this.terrainLabel);
+        add(this.terrainList);
     }
 
     private String[] getSportList() throws SQLException {
@@ -46,21 +53,58 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             sports[i]=rset.getString(1);
             i++;
         }
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        connection.close();
+        System.out.println("Connection closed.");
         return sports;
 
+    }
+
+    public void updateTerrainMenu() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String[] terrain_commune = new String[100];
+        int i = 0;
+        //String PRE_STMT1 = "select nomTerrain, commune from stage St where St.sport = " + map.get("sport");
+        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" + map.get("sport") + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+        while (rset.next()) {
+            terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
+            i++;
+        }
+        for (String terrain : terrain_commune) {
+            this.terrainList.addItem(terrain);
+        }
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        conn.close();
+        System.out.println("Connection closed.");
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == sportList){
             JComboBox cb = (JComboBox)e.getSource();
-            String petName = (String)cb.getSelectedItem();
-            System.out.println("Hello "+petName);
+            String sportName = (String)cb.getSelectedItem();
+            map.put("sport",sportName);
+            try {
+                updateTerrainMenu();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            System.out.println("Select "+sportName);
         }
-        if (e.getSource() == communeList){
+        if (e.getSource() == terrainList){
+            System.out.println("hello");
             JComboBox cb = (JComboBox)e.getSource();
-            String petName = (String)cb.getSelectedItem();
-            System.out.println("Hello "+petName);
+            String terrainName = (String)cb.getSelectedItem();
+            map.put("terrain",terrainName);
+            System.out.println("Select " + terrainName);
         }
     }
 }

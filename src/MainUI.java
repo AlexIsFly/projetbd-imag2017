@@ -21,8 +21,9 @@ public class MainUI {
         onglet1.add(new RajoutStageUI());
 
         JPanel onglet2 = new JPanel();
-        onglet1.setPreferredSize(new Dimension(800, 500));
+        onglet2.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
+        onglet2.add(new InscriptionStageUI());
 
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 500));
