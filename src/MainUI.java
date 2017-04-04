@@ -23,6 +23,7 @@ public class MainUI {
         JPanel onglet2 = new JPanel();
         onglet1.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
+        onglet1.add(new InscriptionStageUI());
 
         /*
         JPanel onglet3 = new JPanel();

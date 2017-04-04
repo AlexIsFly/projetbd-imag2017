@@ -12,9 +12,10 @@ import java.util.HashMap;
  */
 public class RajoutStageUI extends JPanel implements ActionListener {
     ConnectionBD connectionBD;
+    HashMap<String, String> map;
+
     JComboBox<String> sportList;
     JLabel sportLabel;
-    HashMap<String, String> map;
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
@@ -89,9 +90,9 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         }
         if (e.getSource() == terrainList){
             JComboBox cb = (JComboBox)e.getSource();
-            String communeName = (String)cb.getSelectedItem();
-            map.put("commune",communeName);
-            System.out.println("Select " + communeName);
+            String terrainName = (String)cb.getSelectedItem();
+            map.put("terrain",terrainName);
+            System.out.println("Select " + terrainName);
         }
     }
 }
