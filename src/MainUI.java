@@ -21,15 +21,15 @@ public class MainUI {
         onglet1.add(new RajoutStageUI());
 
         JPanel onglet2 = new JPanel();
-        onglet1.setPreferredSize(new Dimension(800, 500));
+        onglet2.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
-        onglet1.add(new InscriptionStageUI());
+        onglet2.add(new InscriptionStageUI());
 
         /*
         JPanel onglet3 = new JPanel();
-        onglet1.setPreferredSize(new Dimension(800, 500));
+        onglet3.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Statistiques", onglet3);
-        onglet1.add(new Statistiques());
+        onglet3.add(new Statistiques());
         */
         
         pannel.add(onglets);
