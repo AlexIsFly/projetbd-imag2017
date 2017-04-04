@@ -54,7 +54,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             i++;
         }
         stmt.close();
+        System.out.println("Stmt closed.");
         rset.close();
+        System.out.println("ResultSet closed.");
+        connection.close();
+        System.out.println("Connection closed.");
         return sports;
 
     }
@@ -75,7 +79,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             this.terrainList.addItem(terrain);
         }
         stmt.close();
+        System.out.println("Stmt closed.");
         rset.close();
+        System.out.println("ResultSet closed.");
+        conn.close();
+        System.out.println("Connection closed.");
     }
 
     @Override
@@ -92,6 +100,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("Select "+sportName);
         }
         if (e.getSource() == terrainList){
+            System.out.println("hello");
             JComboBox cb = (JComboBox)e.getSource();
             String terrainName = (String)cb.getSelectedItem();
             map.put("terrain",terrainName);
