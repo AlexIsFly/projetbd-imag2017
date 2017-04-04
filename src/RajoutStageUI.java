@@ -22,7 +22,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     public RajoutStageUI() {
         this.connectionBD = new ConnectionBD();
         map = new HashMap<String, String>();
-
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         try {
             String[] sports = getSportList();
@@ -38,8 +38,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
         add(this.sportLabel);
         add(this.sportList);
-        add(this.terrainList);
         add(this.terrainLabel);
+        add(this.terrainList);
     }
 
     private String[] getSportList() throws SQLException {
@@ -53,6 +53,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             sports[i]=rset.getString(1);
             i++;
         }
+        stmt.close();
+        rset.close();
         return sports;
 
     }
@@ -69,10 +71,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
             i++;
         }
-
         for (String terrain : terrain_commune) {
             this.terrainList.addItem(terrain);
         }
+        stmt.close();
+        rset.close();
     }
 
     @Override
