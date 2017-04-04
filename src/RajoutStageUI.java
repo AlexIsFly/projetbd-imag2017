@@ -64,7 +64,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String[] terrain_commune = new String[100];
         int i = 0;
         //String PRE_STMT1 = "select nomTerrain, commune from stage St where St.sport = " + map.get("sport");
-        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport =" + map.get("sport") + ") typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
+        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" + map.get("sport") + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
