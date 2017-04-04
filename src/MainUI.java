@@ -34,5 +34,7 @@ public class MainUI {
         pannel.add(onglets);
         f.getContentPane().add(pannel);
         f.setVisible(true);
+
+
     }
 }
