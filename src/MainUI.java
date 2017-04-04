@@ -24,6 +24,13 @@ public class MainUI {
         onglet1.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
 
+        /*
+        JPanel onglet3 = new JPanel();
+        onglet1.setPreferredSize(new Dimension(800, 500));
+        onglets.addTab("Statistiques", onglet3);
+        onglet1.add(new Statistiques());
+        */
+        
         pannel.add(onglets);
         f.getContentPane().add(pannel);
         f.setVisible(true);
