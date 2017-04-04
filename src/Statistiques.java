@@ -1,4 +1,6 @@
 import java.sql.*;
+import java.util.Objects;
+
 import javax.swing.*;
 
 public class Statistiques extends JPanel{
@@ -10,6 +12,7 @@ public class Statistiques extends JPanel{
 	private int recettes;
 	
 	ConnectionBD conn;
+	Connection con;
 	JLabel inscritsLabel1;
 	JLabel inscritsLabel2;
 	JLabel stagiairesLabel1;
@@ -25,6 +28,11 @@ public class Statistiques extends JPanel{
 	
 	public Statistiques() {
 		this.conn = new ConnectionBD();
+		try {
+			this.con = conn.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		this.inscritsLabel1 = new JLabel("Nombre moyen d'inscrits par stage : ");
 		this.stagiairesLabel1 = new JLabel("Nombre total de stagiaires : ");
@@ -51,12 +59,21 @@ public class Statistiques extends JPanel{
 		
 		Box b3 = Box.createHorizontalBox();
 		b3.add(this.terrainsLabel1);
-		this.terrainsLabel2 = new JLabel(listTerrains[0][0]+listTerrains[0][1]);
-		b3.add(this.terrainsLabel2);
-		this.terrainsLabel3 = new JLabel(listTerrains[1][0]+listTerrains[1][1]);
-		b3.add(this.terrainsLabel3);
-		this.terrainsLabel4 = new JLabel(listTerrains[2][0]+listTerrains[2][1]);
-		b3.add(this.terrainsLabel4);
+		if (!(listTerrains[0][0]==null)) {
+			String s1 = listTerrains[0][1]+" à "+listTerrains[0][0];
+			this.terrainsLabel2 = new JLabel(s1);
+			b3.add(this.terrainsLabel2);
+		}
+		if (!(listTerrains[1][0]==null)) {
+			String s2 = ", "+listTerrains[1][1]+" à "+listTerrains[1][0];
+			this.terrainsLabel3 = new JLabel(s2);
+			b3.add(this.terrainsLabel3);
+		}
+		if (!(listTerrains[2][0]==null)) {
+			String s3 = ", "+listTerrains[2][1]+" à "+listTerrains[2][0];
+			this.terrainsLabel4 = new JLabel(s3);
+			b3.add(this.terrainsLabel4);
+		}
 		
 		Box b4 = Box.createHorizontalBox();
 		b4.add(this.ratioLabel1);
@@ -67,6 +84,15 @@ public class Statistiques extends JPanel{
 		b5.add(this.recettesLabel1);
 		this.recettesLabel2 = new JLabel(String.valueOf(recettes));
 		b5.add(this.recettesLabel2);
+		
+	    
+		Box b6 = Box.createVerticalBox();
+		b6.add(b1);
+		b6.add(b2);
+		b6.add(b3);
+		b6.add(b4);
+		b6.add(b5);
+		add(b6);
 	}
 	
 	
@@ -87,26 +113,33 @@ public class Statistiques extends JPanel{
 	//Renvoie -1 si erreur
  	private int calculInscrits() throws SQLException {
 		
-		ConnectionBD connection = new ConnectionBD();
-		Connection con = connection.getConnection();
-		
 		Statement inscrits = null;
+		Statement stages = null;
 		
-		//La requête doit retourner le nombre d'inscrits sous la forme d'un entier
-		final String inscritsStr = "";
+		//Le nombre moyen d'inscrit par stage est calculé après coup à partir du nombre de stages et du nombre d'inscrits
+		final String inscritsStr = "SELECT COUNT(*) FROM EstInscritA";
+		final String stagesStr = "SELECT COUNT(*) FROM Stage";
 		
 		try {
 			con.setAutoCommit(true);
 			
 			inscrits = con.createStatement();
+			stages = con.createStatement();
 			
 			ResultSet inscritsRes = inscrits.executeQuery(inscritsStr);
+			ResultSet stagesRes = stages.executeQuery(stagesStr);
 			inscritsRes.next();
+			stagesRes.next();
 			int nbInscrits = inscritsRes.getInt(1);
-			return nbInscrits;
+			int nbStages = stagesRes.getInt(1);
+			if (nbStages == 0) {
+				return 0;
+			} else {
+				return (nbInscrits/nbStages);
+			}
 			
 		} catch (SQLException e ) {
-	        //Afficher exception	
+	        e.printStackTrace();	
 	        if (con != null) {
 	            try {
 	                System.err.print("Transaction is being rolled back");
@@ -125,13 +158,10 @@ public class Statistiques extends JPanel{
 	private int calculStagiaires() throws SQLException {
 			//Renvoie le nombre total de stagiaires, -1 si erreur
 		
-			ConnectionBD connection = new ConnectionBD();
-			Connection con = connection.getConnection();
-
 			Statement stagiaires = null;
 			
 			//La requête doit retourner le nombre total de stagiaires sous la forme d'un entier
-			final String stagiairesStr = "";
+			final String stagiairesStr = "SELECT COUNT(DISTINCT codePersonne) FROM EstInscritA";
 			
 			try {
 				con.setAutoCommit(true);
@@ -162,14 +192,12 @@ public class Statistiques extends JPanel{
 	//Renvoie un tableau à 2 dimensions contenant la commune puis le nom des 3 terrains les plus utilisés
 	private String[][] calculTerrains() throws SQLException {
 		
-		ConnectionBD connection = new ConnectionBD();
-		Connection con = connection.getConnection();
 		
 		Statement terrains = null;
 		
 		//La requête doit renvoyer la liste des terrains par ordre décroissant d'utilisation, 
 		//avec la commune en 1ère colonne et le nom du terrain en second
-		final String terrainsStr = "";
+		final String terrainsStr = "SELECT s.commune, s.nomTerrain, COUNT(*) AS nbUtilisation FROM Stage s GROUP BY s.commune, s.nomTerrain ORDER BY nbUtilisation DESC";
 		
 		try {
 			con.setAutoCommit(true);
@@ -193,7 +221,7 @@ public class Statistiques extends JPanel{
 	        //Afficher exception	
 	        if (con != null) {
 	            try {
-	                System.err.print("Transaction is being rolled back");
+	                System.err.print("Transaction Terrains is being rolled back");
 	                con.rollback();
 	            } catch(SQLException excep) {
 	            	//Afficher exception
@@ -208,24 +236,28 @@ public class Statistiques extends JPanel{
 	//Renvoie -1 si erreur
 	private float calculRatio() throws SQLException {
 			
-			ConnectionBD connection = new ConnectionBD();
-			Connection con = connection.getConnection();
 			
-			Statement stmt_ratio = null;
+			Statement stmt_supervision = null;
+			Statement stmt_encadrement = null;
 			
 			//La requête doit renvoyer le ratio supervision/encadrement des moniteurs
 			//sous la forme d'un flottant
-			final String ratioStr = "";
+			final String supervisionStr = "SELECT COUNT(*) FROM Stage";
+			final String encadrementStr = "SELECT COUNT(*) FROM EstEncadrePar";
 			
 			try {
 				con.setAutoCommit(true);
 				
-				stmt_ratio = con.createStatement();
+				stmt_supervision = con.createStatement();
+				stmt_encadrement = con.createStatement();
 				
-				ResultSet ratioRes = stmt_ratio.executeQuery(ratioStr);
-				ratioRes.next();
-				float ratio = ratioRes.getFloat(1);
-				
+				ResultSet supervisionRes = stmt_supervision.executeQuery(supervisionStr);
+				ResultSet encadrementRes = stmt_encadrement.executeQuery(encadrementStr);
+				supervisionRes.next();
+				encadrementRes.next();
+				int supervision = supervisionRes.getInt(1);
+				int encadrement = encadrementRes.getInt(1);
+				float ratio = supervision/encadrement;
 				return ratio;
 				
 			} catch (SQLException e ) {
@@ -247,13 +279,10 @@ public class Statistiques extends JPanel{
 	//Renvoie -1 si erreur
 	private int calculRecettes() throws SQLException {
 		
-		ConnectionBD connection = new ConnectionBD();
-		Connection con = connection.getConnection();
-		
 		Statement stmt_recettes = null;
 		
 		//La requête doit renvoyer les recettes totales sous forme d'un entier
-		final String recettesStr = "";
+		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp WHERE st.nomSport=sp.nomSport";
 		
 		try {
 			con.setAutoCommit(true);
