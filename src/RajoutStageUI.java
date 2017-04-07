@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -22,7 +23,9 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     public RajoutStageUI() {
         this.connectionBD = new ConnectionBD();
         map = new HashMap<String, String>();
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        //setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        GridLayout experimentLayout = new GridLayout(5,2);
+        this.setLayout(experimentLayout);
 
         try {
             String[] sports = getSportList();
@@ -75,6 +78,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
             i++;
         }
+        this.terrainList.removeAllItems();
         for (String terrain : terrain_commune) {
             this.terrainList.addItem(terrain);
         }
@@ -93,6 +97,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             String sportName = (String)cb.getSelectedItem();
             map.put("sport",sportName);
             try {
+            	System.out.println(map.get("sport"));
                 updateTerrainMenu();
             } catch (SQLException e1) {
                 e1.printStackTrace();

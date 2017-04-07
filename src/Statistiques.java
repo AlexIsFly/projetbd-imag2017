@@ -5,7 +5,7 @@ import javax.swing.*;
 
 public class Statistiques extends JPanel{
 	
-	private int nbInscrits;
+	private float nbInscrits;
 	private int nbStagiaires;
 	private String[][] listTerrains;
 	private float ratio;
@@ -41,6 +41,11 @@ public class Statistiques extends JPanel{
 		this.recettesLabel1 = new JLabel("Recettes totales : ");
 		
 		afficheStats();
+		try {
+			con.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void afficheStats() {
@@ -56,24 +61,28 @@ public class Statistiques extends JPanel{
 		b2.add(this.stagiairesLabel1);
 		this.stagiairesLabel2 = new JLabel(String.valueOf(nbStagiaires));
 		b2.add(this.stagiairesLabel2);
-		
+
 		Box b3 = Box.createHorizontalBox();
 		b3.add(this.terrainsLabel1);
 		if (!(listTerrains[0][0]==null)) {
 			String s1 = listTerrains[0][1]+" à "+listTerrains[0][0];
 			this.terrainsLabel2 = new JLabel(s1);
 			b3.add(this.terrainsLabel2);
+			
+			if (!(listTerrains[1][0]==null)) {
+				String s2 = ", "+listTerrains[1][1]+" à "+listTerrains[1][0];
+				this.terrainsLabel3 = new JLabel(s2);
+				b3.add(this.terrainsLabel3);
+				
+				if (!(listTerrains[2][0]==null)) {
+					String s3 = ", "+listTerrains[2][1]+" à "+listTerrains[2][0];
+					this.terrainsLabel4 = new JLabel(s3);
+					b3.add(this.terrainsLabel4);
+				}
+			}
 		}
-		if (!(listTerrains[1][0]==null)) {
-			String s2 = ", "+listTerrains[1][1]+" à "+listTerrains[1][0];
-			this.terrainsLabel3 = new JLabel(s2);
-			b3.add(this.terrainsLabel3);
-		}
-		if (!(listTerrains[2][0]==null)) {
-			String s3 = ", "+listTerrains[2][1]+" à "+listTerrains[2][0];
-			this.terrainsLabel4 = new JLabel(s3);
-			b3.add(this.terrainsLabel4);
-		}
+		
+		
 		
 		Box b4 = Box.createHorizontalBox();
 		b4.add(this.ratioLabel1);
@@ -111,7 +120,7 @@ public class Statistiques extends JPanel{
 	}
 	
 	//Renvoie -1 si erreur
- 	private int calculInscrits() throws SQLException {
+ 	private float calculInscrits() throws SQLException {
 		
 		Statement inscrits = null;
 		Statement stages = null;
@@ -135,7 +144,7 @@ public class Statistiques extends JPanel{
 			if (nbStages == 0) {
 				return 0;
 			} else {
-				return (nbInscrits/nbStages);
+				return ((float)nbInscrits/nbStages);
 			}
 			
 		} catch (SQLException e ) {
@@ -211,7 +220,7 @@ public class Statistiques extends JPanel{
 				while (i<3 && terrainsRes.next()) {
 					listTerrains[i][0]=terrainsRes.getString(1); //Commune
 					listTerrains[i][1]=terrainsRes.getString(2); //Nom terrain
-					terrainsRes.next();
+					i++;
 				}
 			}	
 			
@@ -282,7 +291,7 @@ public class Statistiques extends JPanel{
 		Statement stmt_recettes = null;
 		
 		//La requête doit renvoyer les recettes totales sous forme d'un entier
-		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp WHERE st.nomSport=sp.nomSport";
+		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp, EstInscritA i WHERE st.nomSport=sp.nomSport and i.codestage=st.codestage";
 		
 		try {
 			con.setAutoCommit(true);
