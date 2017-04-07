@@ -11,7 +11,6 @@ public class Statistiques extends JPanel{
 	private float ratio;
 	private int recettes;
 	
-	ConnectionBD conn;
 	Connection con;
 	JLabel inscritsLabel1;
 	JLabel inscritsLabel2;
@@ -26,14 +25,13 @@ public class Statistiques extends JPanel{
 	JLabel recettesLabel1;
 	JLabel recettesLabel2;
 	
-	public Statistiques() {
-		this.conn = new ConnectionBD();
+	public Statistiques(ConnectionBD connectionBD) {
 		try {
-			this.con = conn.getConnection();
+			this.con = connectionBD.getConnection();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		this.inscritsLabel1 = new JLabel("Nombre moyen d'inscrits par stage : ");
 		this.stagiairesLabel1 = new JLabel("Nombre total de stagiaires : ");
 		this.terrainsLabel1 = new JLabel("Terrains les plus utilisés : ");

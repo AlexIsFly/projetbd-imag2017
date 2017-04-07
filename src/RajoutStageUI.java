@@ -20,12 +20,12 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
-    public RajoutStageUI() {
-        this.connectionBD = new ConnectionBD();
+
+    public RajoutStageUI(ConnectionBD connectionBD) {
+        this.connectionBD = connectionBD;
         map = new HashMap<String, String>();
-        //setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        GridLayout experimentLayout = new GridLayout(5,2);
-        this.setLayout(experimentLayout);
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+
 
         try {
             String[] sports = getSportList();
@@ -56,10 +56,10 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             sports[i]=rset.getString(1);
             i++;
         }
-        stmt.close();
-        System.out.println("Stmt closed.");
         rset.close();
         System.out.println("ResultSet closed.");
+        stmt.close();
+        System.out.println("Stmt closed.");
         connection.close();
         System.out.println("Connection closed.");
         return sports;

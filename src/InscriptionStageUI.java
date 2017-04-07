@@ -20,8 +20,8 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
     JLabel stageLabel;
     JLabel prixLabel;
 
-    public InscriptionStageUI() {
-        this.connectionBD = new ConnectionBD();
+    public InscriptionStageUI(ConnectionBD connectionBD) {
+        this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         try {
             String[] membres = createMembreList();
@@ -222,6 +222,7 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
             stmt3.close();
             rset2.close();
             rset3.close();
+
         }
         this.prixLabel = new JLabel("Prix :" + Integer.toString(prix));
         this.add(this.prixLabel);

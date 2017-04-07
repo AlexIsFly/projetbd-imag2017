@@ -10,11 +10,19 @@ public class ConnectionBD {
     static final String USER = "gacela";
     static final String PASSWD = "gacela";
 
-    public Connection getConnection() throws SQLException {
+    public ConnectionBD (){
         System.out.print("Loading Oracle driver... ");
-        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+        try {
+            DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+        } catch (SQLException e) {
+            System.out.println("Error loading driver");
+            e.printStackTrace();
+        }
         System.out.println("loaded");
 
+    }
+
+    public Connection getConnection() throws SQLException {
         // Etablissement de la connection
 
         System.out.print("Connecting to the database... ");
