@@ -1,3 +1,7 @@
+
+
+import org.jdesktop.swingx.JXDatePicker;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -6,6 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -20,8 +28,17 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
+    JLabel date;
+    JXDatePicker picker;
 
     public RajoutStageUI(ConnectionBD connectionBD) {
+
+        this.picker = new JXDatePicker();
+        this.picker.setDate(Calendar.getInstance().getTime());
+        this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
+        this.picker.addActionListener(this);
+        this.date = new JLabel("Date");
+
         this.connectionBD = connectionBD;
         map = new HashMap<String, String>();
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -36,6 +53,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             e.printStackTrace();
         }
         this.terrainList = new JComboBox<String>();
+        terrainList.addActionListener(this);
         this.terrainLabel = new JLabel("Terrain");
 
 
@@ -43,6 +61,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.sportList);
         add(this.terrainLabel);
         add(this.terrainList);
+        add(this.date);
+        add(this.picker);
     }
 
     private String[] getSportList() throws SQLException {
@@ -135,11 +155,15 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("Select "+sportName);
         }
         if (e.getSource() == terrainList){
-            System.out.println("hello");
             JComboBox cb = (JComboBox)e.getSource();
             String terrainName = (String)cb.getSelectedItem();
             map.put("terrain",terrainName);
             System.out.println("Select " + terrainName);
+        }
+        if (e.getSource() == picker){
+            Date selectedDate = this.picker.getDate();
+            map.put("date",selectedDate.toString());
+            System.out.println("selectedDate = " + map.get("date"));
         }
     }
 }
