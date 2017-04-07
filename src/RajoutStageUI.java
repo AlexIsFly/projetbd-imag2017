@@ -115,7 +115,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String terrain_com = map.get("terrain");
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
-        String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN ='" + terrain + "' AND COMMUNE = '" + commune + "';";
+        String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN =\'" + terrain + "\' AND COMMUNE = \'" + commune + "\';";
+        System.out.println("PRE_STMT1 = " + PRE_STMT1);
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         String horaire = "Le terrain " + terrain + "est ouvert de " + rset.getString(1) + " à " + rset.getString(2);
@@ -126,7 +127,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         System.out.println("ResultSet closed.");
         conn.close();
         System.out.println("Connection closed.");
-
+        add(new JLabel(horaire));
 
     }
 
@@ -159,6 +160,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             String terrainName = (String)cb.getSelectedItem();
             map.put("terrain",terrainName);
             System.out.println("Select " + terrainName);
+            try {
+                afficheHoraires();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         }
         if (e.getSource() == picker){
             Date selectedDate = this.picker.getDate();
