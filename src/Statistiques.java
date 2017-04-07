@@ -5,7 +5,7 @@ import javax.swing.*;
 
 public class Statistiques extends JPanel{
 	
-	private int nbInscrits;
+	private float nbInscrits;
 	private int nbStagiaires;
 	private String[][] listTerrains;
 	private float ratio;
@@ -115,7 +115,7 @@ public class Statistiques extends JPanel{
 	}
 	
 	//Renvoie -1 si erreur
- 	private int calculInscrits() throws SQLException {
+ 	private float calculInscrits() throws SQLException {
 		
 		Statement inscrits = null;
 		Statement stages = null;
@@ -139,7 +139,7 @@ public class Statistiques extends JPanel{
 			if (nbStages == 0) {
 				return 0;
 			} else {
-				return (nbInscrits/nbStages);
+				return ((float)nbInscrits/nbStages);
 			}
 			
 		} catch (SQLException e ) {
@@ -286,7 +286,7 @@ public class Statistiques extends JPanel{
 		Statement stmt_recettes = null;
 		
 		//La requête doit renvoyer les recettes totales sous forme d'un entier
-		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp WHERE st.nomSport=sp.nomSport";
+		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp, EstInscritA i WHERE st.nomSport=sp.nomSport and i.codestage=st.codestage";
 		
 		try {
 			con.setAutoCommit(true);
