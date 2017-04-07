@@ -28,6 +28,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
+    Box horaireBox = new Box(BoxLayout.LINE_AXIS);
+
     JLabel date;
     JXDatePicker picker;
 
@@ -61,6 +63,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.sportList);
         add(this.terrainLabel);
         add(this.terrainList);
+        add(this.horaireBox);
         add(this.date);
         add(this.picker);
     }
@@ -127,7 +130,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         System.out.println("ResultSet closed.");
         conn.close();
         System.out.println("Connection closed.");
-        add(new JLabel(horaire));
+        this.horaireBox.add(new JLabel(horaire));
 
     }
 
