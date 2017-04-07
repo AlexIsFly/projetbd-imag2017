@@ -47,7 +47,7 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
         Connection connection = connectionBD.getConnection();
         String[] stages = new String[100];
         int i = 0;
-        String PRE_STMT1 = "select codeStage, nomSport, nomTerrain, Commune, dateStageDeb, dateStageFin from stage";
+        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStageDeb, dateStageFin, counts2*10-counts places from (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants, Stage stages where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
@@ -61,6 +61,8 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
             stages[i]+=rset.getTime(5).toString();
             stages[i]+="-";
             stages[i]+=rset.getTime(6).toString();
+            stages[i]+=", Places restantes: ";
+            stages[i]+=rset.getInt(7);
             i++;
         }
         stmt.close();
