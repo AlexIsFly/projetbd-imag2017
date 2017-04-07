@@ -75,6 +75,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
             i++;
         }
+        this.terrainList.removeAllItems();
         for (String terrain : terrain_commune) {
             this.terrainList.addItem(terrain);
         }
@@ -93,6 +94,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             String sportName = (String)cb.getSelectedItem();
             map.put("sport",sportName);
             try {
+            	System.out.println(map.get("sport"));
                 updateTerrainMenu();
             } catch (SQLException e1) {
                 e1.printStackTrace();
