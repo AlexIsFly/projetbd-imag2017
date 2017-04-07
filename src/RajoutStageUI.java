@@ -3,6 +3,7 @@
 import org.jdesktop.swingx.JXDatePicker;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     Box timeBox = new Box(BoxLayout.LINE_AXIS);
     Box horaireBox = new Box(BoxLayout.LINE_AXIS);
+    Box stageBox = new Box(BoxLayout.Y_AXIS);
 
     JTextField startHours;
     JTextField startMinutes;
@@ -95,6 +97,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.horaireBox);
         add(this.date);
         add(this.picker);
+        add(this.stageBox);
         add(this.timeBox);
     }
 
@@ -183,6 +186,35 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     }
 
+    public void afficheStages() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String terrain_com = this.selectedTerrain;
+        String terrain = terrain_com.split(" - ")[0];
+        String commune = terrain_com.split(" - ")[1];
+        String PRE_STMT1 = "select codeStage, dateStageDeb, dateStageFin from STAGE where NOMTERRAIN ='"
+                + terrain + "' AND COMMUNE = "+ " 'La Gerignette' ";
+        System.out.println("PRE_STMT1 = " + PRE_STMT1);
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+
+        this.stageBox.removeAll();
+        while(rset.next())
+        {
+            String a = rset.getString(1);
+            String b = rset.getString(2);
+            String c = rset.getString(3);
+            this.stageBox.add(new JLabel("CodeStage : " + a + " Start : " + b + " End : "+c));
+        }
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        conn.close();
+        System.out.println("Connection closed.");
+        this.stageBox.repaint();
+        this.stageBox.revalidate();
+    }
+
     /*
     public void updateMoniteur() throws SQLException{
         Connection conn = connectionBD.getConnection();
@@ -221,6 +253,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             Date selectedDate = this.picker.getDate();
             this.selectedDay.setTime(selectedDate);
             System.out.println("selectedDate = " + this.selectedDay.toString());
+            try {
+                afficheStages();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         }
         if (e.getSource() == verifyTime){
         }
