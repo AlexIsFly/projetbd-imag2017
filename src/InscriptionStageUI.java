@@ -142,11 +142,13 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
             System.out.println(e.getActionCommand());
             JComboBox cb = (JComboBox)e.getSource();
             String stage = (String)cb.getSelectedItem();
-            stage = stage.split(",")[0];
-            try {
-                affichePrix(stage);
-            } catch (SQLException e1) {
-                e1.printStackTrace();
+            if(stage!=null) {
+                stage = stage.split(",")[0];
+                try {
+                    affichePrix(stage);
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
             }
         }
         if (e.getSource() == sportList){
