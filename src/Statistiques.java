@@ -41,6 +41,11 @@ public class Statistiques extends JPanel{
 		this.recettesLabel1 = new JLabel("Recettes totales : ");
 		
 		afficheStats();
+		try {
+			con.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void afficheStats() {
