@@ -94,7 +94,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         Connection conn = connectionBD.getConnection();
         String terrain_com = map.get("terrain");
         String terrain = terrain_com.split(" - ")[0];
-        String commune = terrain_com.split(" -")[1];
+        String commune = terrain_com.split(" - ")[1];
         String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN ='" + terrain + "' AND COMMUNE = '" + commune + "';";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
