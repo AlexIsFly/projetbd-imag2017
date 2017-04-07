@@ -70,7 +70,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         Connection conn = connectionBD.getConnection();
         String[] terrain_commune = new String[100];
         int i = 0;
-        //String PRE_STMT1 = "select nomTerrain, commune from stage St where St.sport = " + map.get("sport");
         String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" + map.get("sport") + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
@@ -89,6 +88,37 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         conn.close();
         System.out.println("Connection closed.");
     }
+
+
+    public void afficheHoraires() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String terrain_com = map.get("terrain");
+        String terrain = terrain_com.split(" - ")[0];
+        String commune = terrain_com.split(" -")[1];
+        String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN ='" + terrain + "' AND COMMUNE = '" + commune + "';";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+        String horaire = "Le terrain " + terrain + "est ouvert de " + rset.getString(1) + " à " + rset.getString(2);
+        System.out.println(horaire);
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        conn.close();
+        System.out.println("Connection closed.");
+
+
+    }
+
+    /*
+    public void updateMoniteur() throws SQLException{
+        Connection conn = connectionBD.getConnection();
+        String[] moniteur = new String[100];
+        int i = 0;
+        String PRE_STMT1 = "";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+    }*/
 
     @Override
     public void actionPerformed(ActionEvent e) {
