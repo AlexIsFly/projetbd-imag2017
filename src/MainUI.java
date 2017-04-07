@@ -24,12 +24,12 @@ public class MainUI {
         JPanel onglet2 = new JPanel();
         onglet2.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
-        onglet2.add(new InscriptionStageUI(connectionBD));
+        //onglet2.add(new InscriptionStageUI(connectionBD));
 
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Statistiques", onglet3);
-        onglet3.add(new Statistiques(connectionBD));
+        //onglet3.add(new Statistiques(connectionBD));
         
         pannel.add(onglets);
         f.getContentPane().add(pannel);

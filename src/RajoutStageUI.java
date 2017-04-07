@@ -21,27 +21,29 @@ import java.util.HashMap;
  */
 public class RajoutStageUI extends JPanel implements ActionListener {
     ConnectionBD connectionBD;
-    HashMap<String, String> map;
 
     JComboBox<String> sportList;
     JLabel sportLabel;
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
-    Calendar selectedDay;
     Box timeBox = new Box(BoxLayout.LINE_AXIS);
     Box horaireBox = new Box(BoxLayout.LINE_AXIS);
 
-    JLabel startTime;
     JTextField startHours;
     JTextField startMinutes;
+    JLabel startTime;
     JLabel endTime;
     JTextField endHours;
     JTextField endMinutes;
     JButton verifyTime;
-
     JLabel date;
     JXDatePicker picker;
+
+    String selectedSport;
+    String selectedTerrain;
+    Calendar selectedDay;
+
 
     public RajoutStageUI(ConnectionBD connectionBD) {
 
@@ -70,7 +72,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
 
         this.connectionBD = connectionBD;
-        map = new HashMap<String, String>();
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
 
@@ -122,14 +123,17 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         Connection conn = connectionBD.getConnection();
         String[] terrain_commune = new String[100];
         int i = 0;
-        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" + map.get("sport") + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
+        String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" +
+                this.selectedSport + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
             terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
             i++;
         }
+        this.terrainList.removeActionListener(this);
         this.terrainList.removeAllItems();
+        this.terrainList.addActionListener(this);
         for (String terrain : terrain_commune) {
             this.terrainList.addItem(terrain);
         }
@@ -144,7 +148,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     public void afficheHoraires() throws SQLException {
         Connection conn = connectionBD.getConnection();
-        String terrain_com = map.get("terrain");
+        String terrain_com = this.selectedTerrain;
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
         String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN ='" + terrain + "' AND COMMUNE = '" + commune + "'";
@@ -164,6 +168,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         tempCal.setTime(tempDate);
         horaire += " à " + tempCal.get(Calendar.HOUR_OF_DAY) + ":"
                 + tempCal.get(Calendar.MINUTE);
+
         System.out.println(horaire);
         stmt.close();
         System.out.println("Stmt closed.");
@@ -171,7 +176,10 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         System.out.println("ResultSet closed.");
         conn.close();
         System.out.println("Connection closed.");
+        this.horaireBox.removeAll();
         this.horaireBox.add(new JLabel(horaire));
+        this.horaireBox.repaint();
+        this.horaireBox.revalidate();
 
     }
 
@@ -190,20 +198,19 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         if (e.getSource() == sportList){
             JComboBox cb = (JComboBox)e.getSource();
             String sportName = (String)cb.getSelectedItem();
-            map.put("sport",sportName);
+            this.selectedSport = sportName;
+            System.out.println("Select sport "+sportName);
             try {
-            	System.out.println(map.get("sport"));
                 updateTerrainMenu();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
-            System.out.println("Select "+sportName);
         }
         if (e.getSource() == terrainList){
             JComboBox cb = (JComboBox)e.getSource();
             String terrainName = (String)cb.getSelectedItem();
-            map.put("terrain",terrainName);
-            System.out.println("Select " + terrainName);
+            this.selectedTerrain = terrainName;
+            System.out.println("Select terrain " + terrainName);
             try {
                 afficheHoraires();
             } catch (SQLException e1) {
@@ -212,7 +219,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         }
         if (e.getSource() == picker){
             Date selectedDate = this.picker.getDate();
-            map.put("date",selectedDate.toString());
             this.selectedDay.setTime(selectedDate);
             System.out.println("selectedDate = " + this.selectedDay.toString());
         }
