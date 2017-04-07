@@ -14,6 +14,8 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
     int codeMembre=-1;
     JComboBox<String> membreList;
     JLabel membreLabel;
+    JComboBox<String> sportList;
+    JLabel sportLabel;
     JComboBox<String> stageList;
     JLabel stageLabel;
     JLabel prixLabel;
@@ -31,6 +33,16 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
         }
         add(this.membreLabel);
         add(this.membreList);
+        try {
+            String[] sports = createSportList();
+            this.sportList = new JComboBox<String>(sports);
+            sportList.addActionListener(this);
+            this.sportLabel = new JLabel("Liste des sports");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        add(this.sportLabel);
+        add(this.sportList);
         try {
             String[] stages = createStageList();
             this.stageList = new JComboBox<String>(stages);
@@ -74,7 +86,7 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
         return stages;
     }
 
-    public String[] createMembreList() throws SQLException {
+    private String[] createMembreList() throws SQLException {
         Connection connection = connectionBD.getConnection();
         String[] membres = new String[100];
         int i = 0;
@@ -97,6 +109,26 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
         return membres;
     }
 
+    private String[] createSportList() throws SQLException {
+        Connection connection = connectionBD.getConnection();
+        String[] sports = new String[100];
+        int i = 0;
+        String PRE_STMT1 = "select nomSport from sport";
+        PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+        while (rset.next()) {
+            sports[i]=rset.getString(1);
+            i++;
+        }
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        connection.close();
+        System.out.println("Connection closed.");
+        return sports;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == membreList){
@@ -107,6 +139,7 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
             codeMembre = Integer.parseInt(membre);
         }
         if (e.getSource() == stageList){
+            System.out.println(e.getActionCommand());
             JComboBox cb = (JComboBox)e.getSource();
             String stage = (String)cb.getSelectedItem();
             stage = stage.split(",")[0];
@@ -116,6 +149,50 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
                 e1.printStackTrace();
             }
         }
+        if (e.getSource() == sportList){
+            JComboBox cb = (JComboBox)e.getSource();
+            String sport = (String)cb.getSelectedItem();
+            System.out.println(sport);
+            try {
+                updateStageMenu(sport);
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    private void updateStageMenu(String sport) throws SQLException {
+        Connection connection = connectionBD.getConnection();
+        String[] stages = new String[100];
+        int i = 0;
+        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStageDeb, dateStageFin, counts2*10-counts places from (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants, Stage stages where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage and nomSport='" + sport + "'";
+        PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
+        ResultSet rset = stmt.executeQuery();
+        while (rset.next()) {
+            stages[i]="";
+            for(int j=1; j<5; j++){
+                stages[i]+=rset.getString(j);
+                stages[i]+=", ";
+            }
+            stages[i]+=rset.getDate(5).toString();
+            stages[i]+=": ";
+            stages[i]+=rset.getTime(5).toString();
+            stages[i]+="-";
+            stages[i]+=rset.getTime(6).toString();
+            stages[i]+=", Places restantes: ";
+            stages[i]+=rset.getInt(7);
+            i++;
+        }
+        this.stageList.removeAllItems();
+        for (String stage : stages) {
+            this.stageList.addItem(stage);
+        }
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        connection.close();
+        System.out.println("Connection closed.");
     }
 
     private void affichePrix(String sport) throws SQLException {
@@ -141,8 +218,18 @@ public class InscriptionStageUI extends JPanel implements ActionListener {
             if (rset2.getString(1).equals(rset3.getString(1))){
                 prix = (int)(0.9*prix);
             }
+            stmt2.close();
+            stmt3.close();
+            rset2.close();
+            rset3.close();
         }
         this.prixLabel = new JLabel("Prix :" + Integer.toString(prix));
         this.add(this.prixLabel);
+        stmt.close();
+        System.out.println("Stmt closed.");
+        rset.close();
+        System.out.println("ResultSet closed.");
+        connection.close();
+        System.out.println("Connection closed.");
     }
 }
