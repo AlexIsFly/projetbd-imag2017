@@ -16,15 +16,15 @@ public class MainUI {
 
         JPanel pannel = new JPanel();
 
-        JPanel onglet1 = new JPanel();
+        /*JPanel onglet1 = new JPanel();
         onglet1.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Rajout Stage", onglet1);
-        onglet1.add(new RajoutStageUI(connectionBD));
+        onglet1.add(new RajoutStageUI(connectionBD));*/
 
         JPanel onglet2 = new JPanel();
         onglet2.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
-        //onglet2.add(new InscriptionStageUI(connectionBD));
+        onglet2.add(new InscriptionStageUI(connectionBD));
 
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 500));
