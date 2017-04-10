@@ -12,9 +12,11 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
+
+import static javax.swing.ListSelectionModel.*;
 
 /**
  * Created by gacela on 4/3/17.
@@ -27,11 +29,12 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JComboBox<String> terrainList;
     JLabel terrainLabel;
 
-    Box timeBox = new Box(BoxLayout.LINE_AXIS);
-    Box horaireBox = new Box(BoxLayout.LINE_AXIS);
-    Box stageBox = new Box(BoxLayout.Y_AXIS);
-    Box errorBox = new Box(BoxLayout.Y_AXIS);
-    Box moniteurBox = new Box(BoxLayout.PAGE_AXIS);
+    Box timeBox;
+    Box horaireBox;
+    Box stageBox;
+    Box errorBox;
+    Box moniteurBox;
+    Box errorBox2;
 
     JTextField startHours;
     JLabel startTime;
@@ -44,6 +47,9 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     int closeTime;
     boolean valid = true;
 
+    JList monoList;
+    JButton createButton;
+
     Calendar selectedDay;
 
     //element selected by the user to create SQL statement
@@ -52,10 +58,17 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     int selectedDate;
     int selectedStart;
     int selectedEnd;
-    int[] selectedMonos = {1, 2};
-
+    int selectedSupervisor;
+    ArrayList codeMonos;
 
     public RajoutStageUI(ConnectionBD connectionBD) {
+
+        this.timeBox = new Box(BoxLayout.LINE_AXIS);
+        this.horaireBox = new Box(BoxLayout.LINE_AXIS);
+        this.stageBox = new Box(BoxLayout.Y_AXIS);
+        this.errorBox = new Box(BoxLayout.Y_AXIS);
+        this.moniteurBox = new Box(BoxLayout.PAGE_AXIS);
+        this.errorBox2 = new Box(BoxLayout.LINE_AXIS);
 
         this.picker = new JXDatePicker();
         this.picker.setDate(Calendar.getInstance().getTime());
@@ -75,7 +88,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.timeBox.add(endTime);
         this.timeBox.add(endHours);
         this.timeBox.add(verifyTime);
-
+        this.monoList = new JList<>(new DefaultListModel<String>());
+        this.monoList.setSelectionMode(MULTIPLE_INTERVAL_SELECTION);
+        this.createButton = new JButton("Create");
+        this.createButton.addActionListener(this);
+        this.codeMonos = new ArrayList();
 
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -105,6 +122,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.timeBox);
         add(this.errorBox);
         add(this.moniteurBox);
+        add(this.createButton);
+        add(this.errorBox2);
 
     }
 
@@ -119,9 +138,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         }
         sportList.addActionListener(this);
         rset.close();
-        System.out.println("ResultSet closed.");
         stmt.close();
-        System.out.println("Stmt closed.");
         connection.close();
         System.out.println("Connection closed.");
     }
@@ -142,11 +159,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.terrainList.revalidate();
         this.terrainList.repaint();
         stmt.close();
-        System.out.println("Stmt closed.");
         rset.close();
-        System.out.println("ResultSet closed.");
         conn.close();
-        conn = null;
         System.out.println("Connection closed.");
     }
 
@@ -157,7 +171,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
         String PRE_STMT1 = "select heureouverture, heurefermeture from TERRAIN where NOMTERRAIN ='" + terrain + "' AND COMMUNE = '" + commune + "'";
-        System.out.println("PRE_STMT1 = " + PRE_STMT1);
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         rset.next();
@@ -168,13 +181,9 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
         horaire += " à " + this.closeTime;
 
-        System.out.println(horaire);
         stmt.close();
-        System.out.println("Stmt closed.");
         rset.close();
-        System.out.println("ResultSet closed.");
         conn.close();
-        conn = null;
         System.out.println("Connection closed.");
         this.horaireBox.removeAll();
         this.horaireBox.add(new JLabel(horaire));
@@ -216,9 +225,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.stageBox.add(new JScrollPane(aTable));
 
         stmt.close();
-        System.out.println("Stmt closed.");
         rset.close();
-        System.out.println("ResultSet closed.");
         conn.close();
         System.out.println("Connection closed.");
         this.stageBox.repaint();
@@ -237,42 +244,110 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     public void updateMoniteur() throws SQLException{
         Connection conn = connectionBD.getConnection();
-        String[] moniteur = new String[100];
-        int i = 0;
-        String PRE_STMT1 = "select iden.nom, iden.prenom from PERSONNE iden, (select distinct form.CODEPERSONNE " +
+        String PRE_STMT1 = "select iden.codepersonne, iden.nom, iden.prenom from PERSONNE iden, (select distinct form.CODEPERSONNE " +
                 "from ESTFORMEPOUR form, ((select distinct mon.codepersonne from MONITEUR mon) minus " +
-                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = 170520 and (st.HEUREDEBUT<1200 or st.HEUREFIN>1000))) cod " +
-                "where form.NOMSPORT='Athletisme' and form.CODEPERSONNE = cod.codepersonne) codeMon where codeMon.CODEPERSONNE = iden.CODEPERSONNE";
+                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = "+ this.selectedDate +" and (st.HEUREDEBUT<"+ this.selectedEnd +" or st.HEUREFIN>"+this.selectedStart+"))) cod " +
+                "where form.NOMSPORT='"+ this.selectedSport +"' and form.CODEPERSONNE = cod.codepersonne) codeMon where codeMon.CODEPERSONNE = iden.CODEPERSONNE";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
+        DefaultListModel model = (DefaultListModel) this.monoList.getModel();
+        model.removeAllElements();
+        this.moniteurBox.removeAll();
+        while (rset.next()) {
+            String mono = ""+rset.getInt(1)+"-" + rset.getString(2) + " " + rset.getString(3);
+            ((DefaultListModel)this.monoList.getModel()).addElement(mono);
+        }
 
 
-        String PRE_STMT2 = "select p.nom, p.prenom from PERSONNE p, ESTEXPERTEN e where p.CODEPERSONNE=e.CODEPERSONNE and e.NOMSPORT = 'Athletisme'";
+        this.moniteurBox.add(new JLabel("Veuillez choisir les moniteurs",JLabel.CENTER));
+        this.moniteurBox.add(this.monoList);
+
+        stmt.close();
+        rset.close();
+        conn.close();
+        System.out.println("Connection closed.");
+        this.moniteurBox.repaint();
+        this.moniteurBox.revalidate();
+    }
+
+    public void chooseSupervisor() throws SQLException {
+        System.out.println("Choosing Supervisor and building CodeMonos");
+        Connection conn = connectionBD.getConnection();
+        String PRE_STMT2 = "select p.codepersonne, p.nom, p.prenom from PERSONNE p, ESTEXPERTEN e where p.CODEPERSONNE=e.CODEPERSONNE and e.NOMSPORT = '" + this.selectedSport + "'";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT2);
+        ResultSet rset = stmt.executeQuery();
+        List monos = this.monoList.getSelectedValuesList();
+        if (monos.isEmpty()) {
+            this.valid = false;
+            return;
+        }
+        this.selectedSupervisor = Integer.parseInt(monos.get(0).toString().split("-")[0]);
+        System.out.println("this.selectedSupervisor = " + this.selectedSupervisor);
+        System.out.println(monos);
+        while (rset.next()) {
+            if (monos.contains("" + rset.getInt(1) + "-" + rset.getString(2) + " " + rset.getString(3))) {
+                this.selectedSupervisor = rset.getInt(1);
+                break;
+            }
+        }
+        ListIterator ite = monos.listIterator();
+        this.codeMonos = new ArrayList();
+        while (ite.hasNext()){
+            this.codeMonos.add(ite.next().toString().split("-")[0]);
+        }
+        this.valid = true;
+        stmt.close();
+        rset.close();
+        conn.close();
+        System.out.println("Connection closed.");
     }
 
     public void createEntry() throws SQLException {
         Connection conn = connectionBD.getConnection();
+        conn.setAutoCommit(false);
         String terrain_com = this.selectedTerrain;
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
         String PRE_STMT1 = "";
-        Statement stmt;
-        stmt = conn.createStatement(
-                ResultSet.TYPE_SCROLL_INSENSITIVE,
-                ResultSet.CONCUR_UPDATABLE);
-        for (int code : this.selectedMonos) {
-            PRE_STMT1 = "INSERT into Stage(nomSport, dateStage, heureDebut, heureFin, nomTerrain, Commune, codePersonne) values ";
-            PRE_STMT1 += "('"+ this.selectedSport+"',"
-                    + this.selectedDate + ","
-                    + this.selectedStart + ","
-                    + this.selectedEnd + ","
-                    + "'"+ terrain + "'" + ","
-                    + "'"+ commune + "'" + ","
+        PRE_STMT1 = "INSERT into Stage(nomSport, dateStage, heureDebut, heureFin, nomTerrain, Commune, codePersonne) values ";
+        PRE_STMT1 += "('"+ this.selectedSport+"',"
+                + this.selectedDate + ","
+                + this.selectedStart + ","
+                + this.selectedEnd + ","
+                + "'"+ terrain + "'" + ","
+                + "'"+ commune + "'" + ","
+                + this.selectedSupervisor
+                +")";
+        PreparedStatement stmt = conn.prepareStatement(PRE_STMT1,
+                new String[] {"CODESTAGE"});
+        stmt.executeUpdate();
+        System.out.println("PRE_STMT1 final = " + PRE_STMT1);
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        int code;
+        if (generatedKeys.next()) {
+            code = generatedKeys.getInt(1);
+            System.out.println("CODESTAGE = " + code);
+        }
+        else {
+            throw new SQLException("no ID obtained.");
+        }
+
+        ListIterator ite = this.codeMonos.listIterator();
+        String PRE_STMT2 = "blank";
+        while (ite.hasNext()) {
+            PRE_STMT2 = "INSERT into ESTENCADREPAR(codePersonne, codeStage) values ";
+            PRE_STMT2 += "(" + ite.next() + ","
                     + code
                     +")";
-            stmt.executeUpdate(PRE_STMT1);
+            stmt = conn.prepareStatement(PRE_STMT2);
+            stmt.executeUpdate();
+            System.out.println("PRE_STMT2 final = " + PRE_STMT2);
         }
-        System.out.println("PRE_STMT1 final = " + PRE_STMT1);
+        conn.commit();
+
+        stmt.close();
+        conn.close();
+        System.out.println("Connection closed.");
     }
 
     @Override
@@ -309,11 +384,17 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
+            try {
+                updateMoniteur();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         }
         if (e.getSource() == verifyTime){
             int open = Integer.parseInt(this.startHours.getText());
             int close = Integer.parseInt(this.endHours.getText());
             this.errorBox.removeAll();
+
             if (!verifyHoraires(open,close)) {
                 JLabel error = new JLabel("Mauvais horaires", JLabel.CENTER);
                 error.setForeground(Color.RED);
@@ -322,15 +403,31 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             else {
                 this.selectedStart = open;
                 this.selectedEnd = close;
+            }
+            this.errorBox.revalidate();
+            this.errorBox.repaint();
+        }
+        if (e.getSource() == createButton) {
+            this.errorBox2.removeAll();
+            try {
+                chooseSupervisor();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            if (this.valid) {
                 try {
                     createEntry();
                 } catch (SQLException e1) {
                     e1.printStackTrace();
                 }
-                //updateMoniteur();
             }
-            this.errorBox.revalidate();
-            this.errorBox.repaint();
+            else {
+                JLabel error = new JLabel("Probleme de saisie", JLabel.CENTER);
+                error.setForeground(Color.RED);
+                this.errorBox2.add(error);
+            }
+            this.errorBox2.revalidate();
+            this.errorBox2.repaint();
         }
     }
 
