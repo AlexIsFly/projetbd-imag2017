@@ -31,6 +31,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     Box horaireBox = new Box(BoxLayout.LINE_AXIS);
     Box stageBox = new Box(BoxLayout.Y_AXIS);
     Box errorBox = new Box(BoxLayout.Y_AXIS);
+    Box moniteurBox = new Box(BoxLayout.PAGE_AXIS);
 
     JTextField startHours;
     JLabel startTime;
@@ -43,10 +44,13 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     int closeTime;
     boolean valid = true;
 
-    String selectedSport;
-    String selectedTerrain;
     Calendar selectedDay;
 
+    String selectedSport;
+    String selectedTerrain;
+    int selectedDate;
+    int selectedStart;
+    int selectedEnd;
 
     public RajoutStageUI(ConnectionBD connectionBD) {
 
@@ -97,6 +101,8 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.stageBox);
         add(this.timeBox);
         add(this.errorBox);
+        add(this.moniteurBox);
+
     }
 
     private void createSportList() throws SQLException {
@@ -262,6 +268,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         if (e.getSource() == picker){
             Date selectedDate = this.picker.getDate();
             this.selectedDay.setTime(selectedDate);
+            this.selectedDate = dateConvert(selectedDate);
             System.out.println("selectedDate = " + this.selectedDay.toString());
             try {
                 afficheStages();
@@ -277,6 +284,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
                 JLabel error = new JLabel("Mauvais horaires", JLabel.CENTER);
                 error.setForeground(Color.RED);
                 this.errorBox.add(error);
+            }
+            else {
+                this.selectedStart = open;
+                this.selectedEnd = close;
+                //updateMoniteur();
             }
             this.errorBox.revalidate();
             this.errorBox.repaint();
