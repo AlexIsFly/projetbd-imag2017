@@ -113,8 +113,7 @@ public class Statistiques extends JPanel{
 			this.ratio=calculRatio();
 			this.recettes=calculRecettes();
 		} catch (SQLException e ){
-			//Exceptions levées par le setAutoCommit ?
-			System.err.println(("setAutoCommit error"));
+			e.printStackTrace();
 		}
 	}
 	
@@ -153,7 +152,7 @@ public class Statistiques extends JPanel{
 	                System.err.print("Transaction is being rolled back");
 	                con.rollback();
 	            } catch(SQLException excep) {
-	            	//Afficher exception
+	            	e.printStackTrace();
 	            }
 	        }
 	        return -1;
@@ -182,13 +181,13 @@ public class Statistiques extends JPanel{
 				return nbStagiaires;
 				
 			} catch (SQLException e ) {
-		        //Afficher exception	
+				e.printStackTrace();
 		        if (con != null) {
 		            try {
 		                System.err.print("Transaction is being rolled back");
 		                con.rollback();
 		            } catch(SQLException excep) {
-		            	//Afficher exception
+		            	e.printStackTrace();
 		            }
 		        }
 		        return -1;
@@ -226,13 +225,13 @@ public class Statistiques extends JPanel{
 			return listTerrains;
 			
 		} catch (SQLException e ) {
-	        //Afficher exception	
+			e.printStackTrace();
 	        if (con != null) {
 	            try {
 	                System.err.print("Transaction Terrains is being rolled back");
 	                con.rollback();
 	            } catch(SQLException excep) {
-	            	//Afficher exception
+	            	e.printStackTrace();
 	            }
 	        }
 	        return null;
@@ -265,17 +264,21 @@ public class Statistiques extends JPanel{
 				encadrementRes.next();
 				int supervision = supervisionRes.getInt(1);
 				int encadrement = encadrementRes.getInt(1);
-				float ratio = supervision/encadrement;
-				return ratio;
+				if (encadrement == 0) {
+					return 0;
+				} else {
+					float ratio = supervision/encadrement;
+					return ratio;
+				}
 				
 			} catch (SQLException e ) {
-		        //Afficher exception	
+				e.printStackTrace();
 		        if (con != null) {
 		            try {
 		                System.err.print("Transaction is being rolled back");
 		                con.rollback();
 		            } catch(SQLException excep) {
-		            	//Afficher exception
+		            	e.printStackTrace();
 		            }
 		        }
 		        return -1;
@@ -290,7 +293,7 @@ public class Statistiques extends JPanel{
 		Statement stmt_recettes = null;
 		
 		//La requête doit renvoyer les recettes totales sous forme d'un entier
-		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp, EstInscritA i WHERE st.nomSport=sp.nomSport and i.codestage=st.codestage";
+		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp, EstInscritA i WHERE st.nomSport=sp.nomSport and i.codestage=st.codestage and st.datestage>170000 and st.datestage<180000";
 		
 		try {
 			con.setAutoCommit(true);
@@ -303,13 +306,13 @@ public class Statistiques extends JPanel{
 			return recettes;
 			
 		} catch (SQLException e ) {
-	        //Afficher exception	
+			e.printStackTrace();
 	        if (con != null) {
 	            try {
 	                System.err.print("Transaction is being rolled back");
 	                con.rollback();
 	            } catch(SQLException excep) {
-	            	//Afficher exception
+	            	e.printStackTrace();
 	            }
 	        }
 	        return -1;
