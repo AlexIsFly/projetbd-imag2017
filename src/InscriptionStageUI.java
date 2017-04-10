@@ -1,3 +1,5 @@
+import org.jdesktop.swingx.JXDatePicker;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -5,23 +7,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
-/**
- * Created by riffardn on 4/4/17.
- */
 class InscriptionStageUI extends JPanel implements ActionListener {
 
+
     private ConnectionBD connectionBD;
+
     private int codeMembre=-1;
     private String sport;
+    private String selectedCommune;
+    private String selectedSport;
+    private Integer selectedDate;
+
+
     private JComboBox<String> membreList;
     private JLabel membreLabel;
     private JComboBox<String> sportList;
     private JLabel sportLabel;
-    private JComboBox<String> stageList;
-    private JLabel stageLabel;
     private JComboBox<String> communeList;
     private JLabel communeLabel;
+    private JXDatePicker picker;
+    private JLabel date;
+    private Calendar selectedDay;
+    private JComboBox<String> stageList;
+    private JLabel stageLabel;
     private JLabel prixLabel = new JLabel("Prix :");
 
     InscriptionStageUI(ConnectionBD connectionBD) {
@@ -67,13 +79,23 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         }
         add(this.stageLabel);
         add(this.stageList);
+
+        this.picker = new JXDatePicker();
+        this.picker.setDate(Calendar.getInstance().getTime());
+        this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
+        this.picker.addActionListener(this);
+        this.date = new JLabel("Date");
+        this.selectedDay = Calendar.getInstance();
+        add(this.date);
+        add(this.picker);
         add(this.prixLabel);
     }
 
     private String[] createCommuneList() throws SQLException {
         Connection connection = connectionBD.getConnection();
         String[] communes = new String[100];
-        int i = 0;
+        int i = 1;
+        communes[0]="Toutes";
         String PRE_STMT1 = "select distinct commune from terrain";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
@@ -95,22 +117,17 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         Connection connection = connectionBD.getConnection();
         String[] stages = new String[100];
         int i = 0;
-        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStageDeb, dateStageFin, counts2*10-counts places from (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants, Stage stages where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage";
+        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStage, heureDebut, heureFin, counts2*10-counts places from Stage stages, (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
             stages[i]="";
-            for(int j=1; j<5; j++){
+            for(int j=1; j<8; j++){
                 stages[i]+=rset.getString(j);
                 stages[i]+=", ";
             }
-            stages[i]+=rset.getDate(5).toString();
-            stages[i]+=": ";
-            stages[i]+=rset.getTime(5).toString();
-            stages[i]+="-";
-            stages[i]+=rset.getTime(6).toString();
-            stages[i]+=", Places restantes: ";
-            stages[i]+=rset.getInt(7);
+            stages[i]+="Places restantes: ";
+            stages[i]+=rset.getInt(8);
             i++;
         }
         stmt.close();
@@ -118,7 +135,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
         return stages;
     }
@@ -142,7 +158,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
         return membres;
     }
@@ -150,7 +165,8 @@ class InscriptionStageUI extends JPanel implements ActionListener {
     private String[] createSportList() throws SQLException {
         Connection connection = connectionBD.getConnection();
         String[] sports = new String[100];
-        int i = 0;
+        int i = 1;
+        sports[0]="Tous";
         String PRE_STMT1 = "select nomSport from sport";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
@@ -163,7 +179,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
         return sports;
     }
@@ -185,20 +200,20 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         }
         if (e.getSource() == sportList){
             JComboBox cb = (JComboBox)e.getSource();
-            String sport = (String)cb.getSelectedItem();
-            System.out.println(sport);
+            this.selectedSport = (String)cb.getSelectedItem();
+            System.out.println(selectedSport);
             try {
-                updateStageMenu(sport, null);
+                updateStageMenu();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
         }
         if (e.getSource() == communeList){
             JComboBox cb = (JComboBox)e.getSource();
-            String commune = (String)cb.getSelectedItem();
-            System.out.println(commune);
+            this.selectedCommune = (String)cb.getSelectedItem();
+            System.out.println(selectedCommune);
             try {
-                updateStageMenu(null, commune);
+                updateStageMenu();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -216,35 +231,43 @@ class InscriptionStageUI extends JPanel implements ActionListener {
                 }
             }
         }
+        if (e.getSource() == picker){
+            Date selectedDate = this.picker.getDate();
+            this.selectedDate = dateConvert(selectedDate);
+            try {
+                updateStageMenu();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 
-    private void updateStageMenu(String sport, String commune) throws SQLException {
+    private void updateStageMenu() throws SQLException {
         Connection connection = connectionBD.getConnection();
         String[] stages = new String[100];
         int i = 0;
         String requete="";
-        if (sport!=null) {
-            requete+=" and nomSport='" + sport + "'";
+        if (this.selectedSport!=null && !this.selectedSport.equals("Tous")) {
+            requete+=" and nomSport='" + this.selectedSport + "'";
         }
-        if (commune!=null) {
-            requete+=" and commune='" + commune + "'";
+        if (this.selectedCommune!=null && !this.selectedCommune.equals("Toutes")) {
+            requete+=" and commune='" + this.selectedCommune + "'";
         }
-        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStageDeb, dateStageFin, counts2*10-counts places from (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants, Stage stages where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage" + requete;
+        if (this.selectedDate!=null) {
+            requete+=" and dateStage=" + this.selectedDate;
+        }
+        String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStage, heureDebut, heureFin, counts2*10-counts places from (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants, Stage stages where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage" + requete;
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
+        System.out.println(PRE_STMT1);
         while (rset.next()) {
             stages[i]="";
-            for(int j=1; j<5; j++){
+            for(int j=1; j<8; j++){
                 stages[i]+=rset.getString(j);
                 stages[i]+=", ";
             }
-            stages[i]+=rset.getDate(5).toString();
-            stages[i]+=": ";
-            stages[i]+=rset.getTime(5).toString();
-            stages[i]+="-";
-            stages[i]+=rset.getTime(6).toString();
-            stages[i]+=", Places restantes: ";
-            stages[i]+=rset.getInt(7);
+            stages[i]+="Places restantes: ";
+            stages[i]+=rset.getInt(8);
             i++;
         }
         this.stageList.removeAllItems();
@@ -256,7 +279,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
     }
 
@@ -294,7 +316,18 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
+    }
+
+
+    public int dateConvert(Date date) {
+        Calendar tempcal = Calendar.getInstance();
+        tempcal.setTime(date);
+        int year = tempcal.get(Calendar.YEAR);
+        int month = tempcal.get(Calendar.MONTH)+1;
+        int day = tempcal.get(Calendar.DAY_OF_MONTH);
+        int fulldate = year*10000+month*100+day-20000000;
+        System.out.println("date convertie = " + fulldate);
+        return (fulldate);
     }
 }

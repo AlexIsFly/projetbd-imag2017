@@ -16,10 +16,10 @@ public class MainUI {
 
         JPanel pannel = new JPanel();
 
-        /*JPanel onglet1 = new JPanel();
+        JPanel onglet1 = new JPanel();
         onglet1.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Rajout Stage", onglet1);
-        onglet1.add(new RajoutStageUI(connectionBD));*/
+        onglet1.add(new RajoutStageUI(connectionBD));
 
         JPanel onglet2 = new JPanel();
         onglet2.setPreferredSize(new Dimension(800, 500));
@@ -29,7 +29,7 @@ public class MainUI {
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Statistiques", onglet3);
-        //onglet3.add(new Statistiques(connectionBD));
+        onglet3.add(new Statistiques(connectionBD));
         
         pannel.add(onglets);
         f.getContentPane().add(pannel);
