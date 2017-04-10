@@ -231,15 +231,21 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         return this.valid;
     }
 
-    /*
+
     public void updateMoniteur() throws SQLException{
         Connection conn = connectionBD.getConnection();
         String[] moniteur = new String[100];
         int i = 0;
-        String PRE_STMT1 = "";
+        String PRE_STMT1 = "select iden.nom, iden.prenom from PERSONNE iden, (select distinct form.CODEPERSONNE " +
+                "from ESTFORMEPOUR form, ((select distinct mon.codepersonne from MONITEUR mon) minus " +
+                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = 170520 and (st.HEUREDEBUT<1200 or st.HEUREFIN>1000))) cod " +
+                "where form.NOMSPORT='Athletisme' and form.CODEPERSONNE = cod.codepersonne) codeMon where codeMon.CODEPERSONNE = iden.CODEPERSONNE";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
-    }*/
+
+
+        String PRE_STMT2 = "select p.nom, p.prenom from PERSONNE p, ESTEXPERTEN e where p.CODEPERSONNE=e.CODEPERSONNE and e.NOMSPORT = 'Athletisme'";
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
