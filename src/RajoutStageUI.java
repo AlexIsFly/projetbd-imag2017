@@ -9,10 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,20 +30,29 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     Box timeBox = new Box(BoxLayout.LINE_AXIS);
     Box horaireBox = new Box(BoxLayout.LINE_AXIS);
     Box stageBox = new Box(BoxLayout.Y_AXIS);
+    Box errorBox = new Box(BoxLayout.Y_AXIS);
+    Box moniteurBox = new Box(BoxLayout.PAGE_AXIS);
 
     JTextField startHours;
-    JTextField startMinutes;
     JLabel startTime;
     JLabel endTime;
     JTextField endHours;
-    JTextField endMinutes;
     JButton verifyTime;
     JLabel date;
     JXDatePicker picker;
+    int openTime;
+    int closeTime;
+    boolean valid = true;
 
+    Calendar selectedDay;
+
+    //element selected by the user to create SQL statement
     String selectedSport;
     String selectedTerrain;
-    Calendar selectedDay;
+    int selectedDate;
+    int selectedStart;
+    int selectedEnd;
+    int[] selectedMonos = {1, 2};
 
 
     public RajoutStageUI(ConnectionBD connectionBD) {
@@ -58,34 +64,31 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.date = new JLabel("Date");
         this.selectedDay = Calendar.getInstance();
 
-        this.startTime = new JLabel("Début hh:mm");
+        this.startTime = new JLabel("Debut hhmm");
         this.startHours = new JTextField(2);
-        this.startMinutes = new JTextField(2);
-        this.endTime = new JLabel("Fin hh:mm");
+        this.endTime = new JLabel("Fin hhmm");
         this.endHours = new JTextField(2);
-        this.endMinutes = new JTextField(2);
         this.verifyTime = new JButton("Verify");
         this.verifyTime.addActionListener(this);
         this.timeBox.add(startTime);
         this.timeBox.add(startHours);
-        this.timeBox.add(startMinutes);
         this.timeBox.add(endTime);
         this.timeBox.add(endHours);
-        this.timeBox.add(endMinutes);
         this.timeBox.add(verifyTime);
 
 
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+
         try {
-            String[] sports = getSportList();
-            this.sportList = new JComboBox<String>(sports);
-            sportList.addActionListener(this);
-            this.sportLabel = new JLabel("Sport");
+            createSportList();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        this.sportLabel = new JLabel("Sport");
+
+
         this.terrainList = new JComboBox<String>();
         terrainList.addActionListener(this);
         this.terrainLabel = new JLabel("Terrain");
@@ -100,48 +103,44 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.picker);
         add(this.stageBox);
         add(this.timeBox);
+        add(this.errorBox);
+        add(this.moniteurBox);
+
     }
 
-    private String[] getSportList() throws SQLException {
+    private void createSportList() throws SQLException {
         Connection connection = connectionBD.getConnection();
-        String[] sports = new String[100];
-        int i = 0;
+        this.sportList = new JComboBox<>();
         String PRE_STMT1 = "select nomSport from sport";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
-            sports[i]=rset.getString(1);
-            i++;
+            this.sportList.addItem(rset.getString(1));
         }
+        sportList.addActionListener(this);
         rset.close();
         System.out.println("ResultSet closed.");
         stmt.close();
         System.out.println("Stmt closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
-        return sports;
-
     }
 
     public void updateTerrainMenu() throws SQLException {
         Connection conn = connectionBD.getConnection();
-        String[] terrain_commune = new String[100];
-        int i = 0;
         String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" +
                 this.selectedSport + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
-        while (rset.next()) {
-            terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
-            i++;
-        }
         this.terrainList.removeActionListener(this);
         this.terrainList.removeAllItems();
         this.terrainList.addActionListener(this);
-        for (String terrain : terrain_commune) {
-            this.terrainList.addItem(terrain);
+        while (rset.next()) {
+            this.terrainList.addItem(rset.getString(1) + " - " + rset.getString(2));
+
         }
+        this.terrainList.revalidate();
+        this.terrainList.repaint();
         stmt.close();
         System.out.println("Stmt closed.");
         rset.close();
@@ -162,18 +161,12 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         rset.next();
-        Date tempDate = new Date(rset.getDate(1).getTime());
-        Calendar tempCal = Calendar.getInstance();
-        tempCal.setTime(tempDate);
+        this.openTime = rset.getInt(1);
+        this.closeTime = rset.getInt(2);
 
-        String horaire = "Le terrain " + terrain + " est ouvert de "
-                + tempCal.get(Calendar.HOUR_OF_DAY) + ":"
-                + tempCal.get(Calendar.MINUTE);
+        String horaire = "Le terrain " + terrain + " est ouvert de " + this.openTime;
 
-        tempDate = new Date(rset.getDate(2).getTime());
-        tempCal.setTime(tempDate);
-        horaire += " à " + tempCal.get(Calendar.HOUR_OF_DAY) + ":"
-                + tempCal.get(Calendar.MINUTE);
+        horaire += " à " + this.closeTime;
 
         System.out.println(horaire);
         stmt.close();
@@ -195,20 +188,33 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String terrain_com = this.selectedTerrain;
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
-        String PRE_STMT1 = "select codeStage, dateStageDeb, dateStageFin from STAGE where NOMTERRAIN ='"
-                + terrain + "' AND COMMUNE = "+ " 'La Gerignette' ";
+        String PRE_STMT1 = "select codeStage, DateStage, heureDebut, heureFin from STAGE where NOMTERRAIN ='"
+                + terrain + "' AND COMMUNE = "+ "'" + commune +  "'";
         System.out.println("PRE_STMT1 = " + PRE_STMT1);
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
 
-        this.stageBox.removeAll();
-        while(rset.next())
-        {
-            String a = rset.getString(1);
-            String b = rset.getString(2);
-            String c = rset.getString(3);
-            this.stageBox.add(new JLabel("CodeStage : " + a + " Start : " + b + " End : "+c));
+        String[] tableColumnsName = {"codeStage","Jour","HeureDebut","HeureFin"};
+        JTable aTable = new JTable();
+        DefaultTableModel aModel = (DefaultTableModel) aTable.getModel();
+        aModel.setColumnIdentifiers(tableColumnsName);
+        ResultSetMetaData rsmd = rset.getMetaData();
+        int colNo = rsmd.getColumnCount();
+        while(rset.next()){
+            int tempdate = rset.getInt(2);
+            if (tempdate == dateConvert(this.selectedDay.getTime())) {
+                Object[] objects = new Object[colNo];
+                for(int i=0;i<colNo;i++){
+                    objects[i]=rset.getObject(i+1);
+                }
+                aModel.addRow(objects);
+            }
         }
+        aTable.setModel(aModel);
+        aTable.setPreferredScrollableViewportSize(new Dimension(3,100));
+        this.stageBox.removeAll();
+        this.stageBox.add(new JScrollPane(aTable));
+
         stmt.close();
         System.out.println("Stmt closed.");
         rset.close();
@@ -219,15 +225,55 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.stageBox.revalidate();
     }
 
-    /*
+    public boolean verifyHoraires(int open, int close) {
+        if (open < this.openTime || close > this.closeTime) {
+            this.valid = false;
+            return this.valid;
+        }
+        this.valid = true;
+        return this.valid;
+    }
+
+
     public void updateMoniteur() throws SQLException{
         Connection conn = connectionBD.getConnection();
         String[] moniteur = new String[100];
         int i = 0;
-        String PRE_STMT1 = "";
+        String PRE_STMT1 = "select iden.nom, iden.prenom from PERSONNE iden, (select distinct form.CODEPERSONNE " +
+                "from ESTFORMEPOUR form, ((select distinct mon.codepersonne from MONITEUR mon) minus " +
+                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = 170520 and (st.HEUREDEBUT<1200 or st.HEUREFIN>1000))) cod " +
+                "where form.NOMSPORT='Athletisme' and form.CODEPERSONNE = cod.codepersonne) codeMon where codeMon.CODEPERSONNE = iden.CODEPERSONNE";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
-    }*/
+
+
+        String PRE_STMT2 = "select p.nom, p.prenom from PERSONNE p, ESTEXPERTEN e where p.CODEPERSONNE=e.CODEPERSONNE and e.NOMSPORT = 'Athletisme'";
+    }
+
+    public void createEntry() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String terrain_com = this.selectedTerrain;
+        String terrain = terrain_com.split(" - ")[0];
+        String commune = terrain_com.split(" - ")[1];
+        String PRE_STMT1 = "";
+        Statement stmt;
+        stmt = conn.createStatement(
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+        for (int code : this.selectedMonos) {
+            PRE_STMT1 = "INSERT into Stage(nomSport, dateStage, heureDebut, heureFin, nomTerrain, Commune, codePersonne) values ";
+            PRE_STMT1 += "('"+ this.selectedSport+"',"
+                    + this.selectedDate + ","
+                    + this.selectedStart + ","
+                    + this.selectedEnd + ","
+                    + "'"+ terrain + "'" + ","
+                    + "'"+ commune + "'" + ","
+                    + code
+                    +")";
+            stmt.executeUpdate(PRE_STMT1);
+        }
+        System.out.println("PRE_STMT1 final = " + PRE_STMT1);
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -256,6 +302,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         if (e.getSource() == picker){
             Date selectedDate = this.picker.getDate();
             this.selectedDay.setTime(selectedDate);
+            this.selectedDate = dateConvert(selectedDate);
             System.out.println("selectedDate = " + this.selectedDay.toString());
             try {
                 afficheStages();
@@ -264,6 +311,37 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             }
         }
         if (e.getSource() == verifyTime){
+            int open = Integer.parseInt(this.startHours.getText());
+            int close = Integer.parseInt(this.endHours.getText());
+            this.errorBox.removeAll();
+            if (!verifyHoraires(open,close)) {
+                JLabel error = new JLabel("Mauvais horaires", JLabel.CENTER);
+                error.setForeground(Color.RED);
+                this.errorBox.add(error);
+            }
+            else {
+                this.selectedStart = open;
+                this.selectedEnd = close;
+                try {
+                    createEntry();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                //updateMoniteur();
+            }
+            this.errorBox.revalidate();
+            this.errorBox.repaint();
         }
+    }
+
+    public int dateConvert(Date date) {
+        Calendar tempcal = Calendar.getInstance();
+        tempcal.setTime(date);
+        int year = tempcal.get(Calendar.YEAR);
+        int month = tempcal.get(Calendar.MONTH)+1;
+        int day = tempcal.get(Calendar.DAY_OF_MONTH);
+        int fulldate = year*10000+month*100+day-20000000;
+        System.out.println("date convertie = " + fulldate);
+        return (fulldate);
     }
 }
