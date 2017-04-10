@@ -118,7 +118,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
         return stages;
     }

@@ -30,6 +30,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     Box timeBox = new Box(BoxLayout.LINE_AXIS);
     Box horaireBox = new Box(BoxLayout.LINE_AXIS);
     Box stageBox = new Box(BoxLayout.Y_AXIS);
+    Box errorBox = new Box(BoxLayout.Y_AXIS);
 
     JTextField startHours;
     JLabel startTime;
@@ -40,6 +41,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JXDatePicker picker;
     int openTime;
     int closeTime;
+    boolean valid = true;
 
     String selectedSport;
     String selectedTerrain;
@@ -71,14 +73,15 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+
         try {
-            String[] sports = getSportList();
-            this.sportList = new JComboBox<String>(sports);
-            sportList.addActionListener(this);
-            this.sportLabel = new JLabel("Sport");
+            createSportList();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        this.sportLabel = new JLabel("Sport");
+
+
         this.terrainList = new JComboBox<String>();
         terrainList.addActionListener(this);
         this.terrainLabel = new JLabel("Terrain");
@@ -93,48 +96,42 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.picker);
         add(this.stageBox);
         add(this.timeBox);
+        add(this.errorBox);
     }
 
-    private String[] getSportList() throws SQLException {
+    private void createSportList() throws SQLException {
         Connection connection = connectionBD.getConnection();
-        String[] sports = new String[100];
-        int i = 0;
+        this.sportList = new JComboBox<>();
         String PRE_STMT1 = "select nomSport from sport";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         while (rset.next()) {
-            sports[i]=rset.getString(1);
-            i++;
+            this.sportList.addItem(rset.getString(1));
         }
+        sportList.addActionListener(this);
         rset.close();
         System.out.println("ResultSet closed.");
         stmt.close();
         System.out.println("Stmt closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
-        return sports;
-
     }
 
     public void updateTerrainMenu() throws SQLException {
         Connection conn = connectionBD.getConnection();
-        String[] terrain_commune = new String[100];
-        int i = 0;
         String PRE_STMT1 = "select nomTerrain, commune from (select typeTerrain from PeutSeJouerSur where NomSport = '" +
                 this.selectedSport + "') typeT, Terrain T where typeT.typeTerrain = T.typeTerrain";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
-        while (rset.next()) {
-            terrain_commune [i] = rset.getString(1) + " - " + rset.getString(2);
-            i++;
-        }
         this.terrainList.removeActionListener(this);
         this.terrainList.removeAllItems();
         this.terrainList.addActionListener(this);
-        for (String terrain : terrain_commune) {
-            this.terrainList.addItem(terrain);
+        while (rset.next()) {
+            this.terrainList.addItem(rset.getString(1) + " - " + rset.getString(2));
+
         }
+        this.terrainList.revalidate();
+        this.terrainList.repaint();
         stmt.close();
         System.out.println("Stmt closed.");
         rset.close();
@@ -182,25 +179,21 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String terrain_com = this.selectedTerrain;
         String terrain = terrain_com.split(" - ")[0];
         String commune = terrain_com.split(" - ")[1];
-        String PRE_STMT1 = "select codeStage, dateStageDeb, dateStageFin from STAGE where NOMTERRAIN ='"
-                + terrain + "' AND COMMUNE = "+ " 'La Gerignette' ";
+        String PRE_STMT1 = "select codeStage, DateStage, heureDebut, heureFin from STAGE where NOMTERRAIN ='"
+                + terrain + "' AND COMMUNE = "+ "'" + commune +  "'";
         System.out.println("PRE_STMT1 = " + PRE_STMT1);
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
 
-        String[] tableColumnsName = {"codeStage","HeureDebut","HeureFin"};
+        String[] tableColumnsName = {"codeStage","Jour","HeureDebut","HeureFin"};
         JTable aTable = new JTable();
         DefaultTableModel aModel = (DefaultTableModel) aTable.getModel();
         aModel.setColumnIdentifiers(tableColumnsName);
         ResultSetMetaData rsmd = rset.getMetaData();
         int colNo = rsmd.getColumnCount();
-        Date tempdate;
-        Calendar tempcal = Calendar.getInstance();
         while(rset.next()){
-            tempdate = new Date(rset.getDate(2).getTime());
-            tempcal.setTime(tempdate);
-            if (tempcal.get(Calendar.DAY_OF_YEAR)==selectedDay.get(Calendar.DAY_OF_YEAR) &&
-                    tempcal.get(Calendar.YEAR)==selectedDay.get(Calendar.YEAR)) {
+            int tempdate = rset.getInt(2);
+            if (tempdate == dateConvert(this.selectedDay.getTime())) {
                 Object[] objects = new Object[colNo];
                 for(int i=0;i<colNo;i++){
                     objects[i]=rset.getObject(i+1);
@@ -210,6 +203,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         }
         aTable.setModel(aModel);
         aTable.setPreferredScrollableViewportSize(new Dimension(3,100));
+        this.stageBox.removeAll();
         this.stageBox.add(new JScrollPane(aTable));
 
         stmt.close();
@@ -224,8 +218,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     public boolean verifyHoraires(int open, int close) {
         if (open < this.openTime || close > this.closeTime) {
+            this.valid = false;
+            return this.valid;
         }
-        return false;
+        this.valid = true;
+        return this.valid;
     }
 
     /*
@@ -275,9 +272,14 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         if (e.getSource() == verifyTime){
             int open = Integer.parseInt(this.startHours.getText());
             int close = Integer.parseInt(this.endHours.getText());
+            this.errorBox.removeAll();
             if (!verifyHoraires(open,close)) {
-                this.stageBox.add(new JLabel("Mauvais horaires"));
+                JLabel error = new JLabel("Mauvais horaires", JLabel.CENTER);
+                error.setForeground(Color.RED);
+                this.errorBox.add(error);
             }
+            this.errorBox.revalidate();
+            this.errorBox.repaint();
         }
     }
 
