@@ -13,6 +13,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
     private ConnectionBD connectionBD;
 
     private int codeMembre=-1;
+    private int places;
     private String selectedStage;
     private String selectedCommune;
     private String selectedSport;
@@ -147,7 +148,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         System.out.println("Connection closed.");
     }
 
-    private void createStageList() throws SQLException {
+    /*private void createStageList() throws SQLException {
         Connection connection = connectionBD.getConnection();
         //String PRE_STMT1 = "select stages.codeStage, nomSport, nomTerrain, Commune, dateStage, heureDebut, heureFin, counts2*10-counts places from Stage stages, (select codestage, COUNT(codePersonne) counts from EstInscritA group by codestage) inscrits, (select codestage, count(codePersonne) counts2 from ESTENCADREPAR group by codestage) encadrants where stages.codestage=inscrits.codestage and stages.codestage=encadrants.codestage and inscrits.codestage=encadrants.codestage and dateStage>" + dateConvert(Calendar.getInstance().getTime());
         String PRE_STMT1 = "select codeStage, nomSport, nomTerrain, Commune, dateStage, heureDebut, heureFin from Stage where dateStage>" + dateConvert(Calendar.getInstance().getTime());
@@ -170,8 +171,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
             length=rset.getString(7).length();
             stage+=rset.getString(7).substring(0,length-2)+":";
             stage+=rset.getString(7).substring(length-2,length)+", ";
-            //stage+="Places restantes: ";
-            //stage+=rset.getInt(8);
             this.stageList.addItem(stage);
         }
         stmt.close();
@@ -180,7 +179,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         System.out.println("ResultSet closed.");
         connection.close();
         System.out.println("Connection closed.");
-    }
+    }*/
 
     private void createMembreList() throws SQLException {
         Connection connection = connectionBD.getConnection();
@@ -240,7 +239,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
             this.selectedSport = (String)cb.getSelectedItem();
             System.out.println(selectedSport);
             try {
-                updateStageMenu();
+                createStageList();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -250,7 +249,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
             this.selectedCommune = (String)cb.getSelectedItem();
             System.out.println(selectedCommune);
             try {
-                updateStageMenu();
+                createStageList();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -259,7 +258,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
             Date selectedDate = this.picker.getDate();
             this.selectedDate = dateConvert(selectedDate);
             try {
-                updateStageMenu();
+                createStageList();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -267,7 +266,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         if (e.getSource()== resetTime) {
             this.selectedDate=null;
             try {
-                updateStageMenu();
+                createStageList();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -296,18 +295,20 @@ class InscriptionStageUI extends JPanel implements ActionListener {
 
     private void affichePlacesRestantes() throws SQLException {
         Connection connection = connectionBD.getConnection();
-        String PRE_STMT1 = "select Case When counts2*10-counts<capa Then counts2*10-counts Else capa end as places from (select Capacite capa from Terrain terrain, Stage stage where terrain.nomTerrain=stage.nomTerrain and terrain.commune=stage.commune and stage.codestage="+ Integer.parseInt(selectedStage) +"), (select COUNT(codePersonne) counts from EstInscritA where codestage="+ Integer.parseInt(selectedStage) +" group by codestage), (select count(codePersonne) counts2 from ESTENCADREPAR where codestage="+ Integer.parseInt(selectedStage) +" group by codestage)";
+        String PRE_STMT1 = "select Case When counts2*10-counts<capa-counts Then counts2*10-counts Else capa-counts end as places from (select Capacite capa from Terrain terrain, Stage stage where terrain.nomTerrain=stage.nomTerrain and terrain.commune=stage.commune and stage.codestage="+ Integer.parseInt(selectedStage) +"), (select COUNT(codePersonne) counts from EstInscritA where codestage="+ Integer.parseInt(selectedStage) +" group by codestage), (select count(codePersonne) counts2 from ESTENCADREPAR where codestage="+ Integer.parseInt(selectedStage) +" group by codestage)";
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         if(rset.next()) {
-            this.placesRestantes.setText("Places restantes: " + rset.getInt(1));
+            places=rset.getInt(1);
+            this.placesRestantes.setText("Places restantes: " + places);
         }
         else {
             PRE_STMT1="select Case When 10*counts<capa then 10*counts Else capa end as places from (select Capacite capa from Terrain terrain, Stage stage where codestage="+ Integer.parseInt(selectedStage) +" and terrain.nomTerrain=stage.nomTerrain and terrain.commune=stage.commune), (select count(codePersonne) counts from ESTENCADREPAR where codestage="+ Integer.parseInt(selectedStage) +" group by codestage)";
             stmt = connection.prepareStatement(PRE_STMT1);
             rset = stmt.executeQuery();
             rset.next();
-            this.placesRestantes.setText("Places restantes: " + rset.getInt(1));
+            places=rset.getInt(1);
+            this.placesRestantes.setText("Places restantes: " + places);
         }
         stmt.close();
         System.out.println("Stmt closed.");
@@ -328,26 +329,31 @@ class InscriptionStageUI extends JPanel implements ActionListener {
                 if (prix == null) {
                     affichePrix();
                 }
-                Connection conn = connectionBD.getConnection();
-                String PRE_STMT1 = "";
-                Statement stmt;
-                stmt = conn.createStatement(
-                        ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE);
-                PRE_STMT1 = "INSERT into EstInscritA(codePersonne, codeStage, prixInscription, dateInscription) values ";
-                PRE_STMT1 += "(" + this.codeMembre + ","
-                        + this.selectedStage + ","
-                        + this.prix + ","
-                        + dateConvert(Calendar.getInstance().getTime())
-                        + ")";
-                System.out.println("PRE_STMT1 = " + PRE_STMT1);
-                stmt.executeUpdate(PRE_STMT1);
-                conn.close();
+                if (places<1){
+                    this.messageErreur.setText("Il n'y a plus de places disponibles pour ce stage");
+                }
+                else {
+                    Connection conn = connectionBD.getConnection();
+                    String PRE_STMT1 = "";
+                    Statement stmt;
+                    stmt = conn.createStatement(
+                            ResultSet.TYPE_SCROLL_INSENSITIVE,
+                            ResultSet.CONCUR_UPDATABLE);
+                    PRE_STMT1 = "INSERT into EstInscritA(codePersonne, codeStage, prixInscription, dateInscription) values ";
+                    PRE_STMT1 += "(" + this.codeMembre + ","
+                            + this.selectedStage + ","
+                            + this.prix + ","
+                            + dateConvert(Calendar.getInstance().getTime())
+                            + ")";
+                    System.out.println("PRE_STMT1 = " + PRE_STMT1);
+                    stmt.executeUpdate(PRE_STMT1);
+                    conn.close();
+                }
             }
         }
     }
 
-    private void updateStageMenu() throws SQLException {
+    private void createStageList() throws SQLException {
         Connection connection = connectionBD.getConnection();
         String[] stages = new String[100];
         int i = 0;
@@ -366,18 +372,24 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         PreparedStatement stmt = connection.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
         System.out.println(PRE_STMT1);
-        while (rset.next()) {
-            stages[i]="";
-            for(int j=1; j<8; j++){
-                stages[i]+=rset.getString(j);
-                stages[i]+=", ";
-            }
-            stages[i]+="Places restantes: ";
-            stages[i]+=rset.getInt(8);
-            i++;
-        }
+        String stage;
+        int length;
         this.stageList.removeAllItems();
-        for (String stage : stages) {
+        while (rset.next()) {
+            stage="";
+            for(int j=1; j<5; j++){
+                stage+=rset.getString(j);
+                stage+=", ";
+            }
+            stage+=rset.getString(5).substring(4,6)+"/";
+            stage+=rset.getString(5).substring(2,4)+"/";
+            stage+=rset.getString(5).substring(0,2)+" ";
+            length=rset.getString(6).length();
+            stage+=rset.getString(6).substring(0,length-2)+":";
+            stage+=rset.getString(6).substring(length-2,length)+"-";
+            length=rset.getString(7).length();
+            stage+=rset.getString(7).substring(0,length-2)+":";
+            stage+=rset.getString(7).substring(length-2,length)+", ";
             this.stageList.addItem(stage);
         }
         stmt.close();
