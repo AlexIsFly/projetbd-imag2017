@@ -25,20 +25,31 @@ class InscriptionStageUI extends JPanel implements ActionListener {
 
     private JComboBox<String> membreList;
     private JLabel membreLabel;
+
+    private Box triStageBox = new Box(BoxLayout.LINE_AXIS);
+    private Box sportBox = new Box(BoxLayout.PAGE_AXIS);
     private JComboBox<String> sportList;
     private JLabel sportLabel;
+    private Box communeBox = new Box(BoxLayout.PAGE_AXIS);
     private JComboBox<String> communeList;
     private JLabel communeLabel;
+
+    private Box dateBox = new Box(BoxLayout.LINE_AXIS);
     private JXDatePicker picker;
     private JLabel date;
     private Calendar selectedDay;
     private JComboBox<String> stageList;
     private JLabel stageLabel;
+    private JButton resetTime;
+
     private JLabel prixLabel = new JLabel("Prix :");
+
+    private JButton inscription = new JButton("Inscription");
 
     InscriptionStageUI(ConnectionBD connectionBD) {
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+
         try {
             String[] membres = createMembreList();
             this.membreList = new JComboBox<>(membres);
@@ -49,6 +60,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         }
         add(this.membreLabel);
         add(this.membreList);
+
         try {
             String[] sports = createSportList();
             this.sportList = new JComboBox<>(sports);
@@ -57,8 +69,10 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        add(this.sportLabel);
-        add(this.sportList);
+        this.sportBox.add(this.sportLabel);
+        this.sportBox.add(this.sportList);
+        this.triStageBox.add(this.sportBox);
+
         try {
             String[] communes = createCommuneList();
             this.communeList = new JComboBox<>(communes);
@@ -67,8 +81,12 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        add(this.communeLabel);
-        add(this.communeList);
+        this.communeBox.add(this.communeLabel);
+        this.communeBox.add(this.communeList);
+        this.triStageBox.add(this.communeBox);
+
+        add(this.triStageBox);
+
         try {
             String[] stages = createStageList();
             this.stageList = new JComboBox<>(stages);
@@ -84,11 +102,20 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         this.picker.setDate(Calendar.getInstance().getTime());
         this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
         this.picker.addActionListener(this);
-        this.date = new JLabel("Date");
+        this.date = new JLabel("Date : ");
         this.selectedDay = Calendar.getInstance();
-        add(this.date);
-        add(this.picker);
+        this.dateBox.add(this.date);
+        this.dateBox.add(this.picker);
+
+        this.resetTime = new JButton("Reset date");
+        this.resetTime.addActionListener(this);
+        this.dateBox.add(this.resetTime);
+        add(this.dateBox);
+
         add(this.prixLabel);
+
+        this.inscription.addActionListener(this);
+        add(this.inscription);
     }
 
     private String[] createCommuneList() throws SQLException {
@@ -218,8 +245,24 @@ class InscriptionStageUI extends JPanel implements ActionListener {
                 e1.printStackTrace();
             }
         }
+        if (e.getSource() == picker){
+            Date selectedDate = this.picker.getDate();
+            this.selectedDate = dateConvert(selectedDate);
+            try {
+                updateStageMenu();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
+        if (e.getSource()== resetTime) {
+            this.selectedDate=null;
+            try {
+                updateStageMenu();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
         if (e.getSource() == stageList){
-            System.out.println(e.getActionCommand());
             JComboBox cb = (JComboBox)e.getSource();
             String stage = (String)cb.getSelectedItem();
             if(stage!=null) {
@@ -229,15 +272,6 @@ class InscriptionStageUI extends JPanel implements ActionListener {
                 } catch (SQLException e1) {
                     e1.printStackTrace();
                 }
-            }
-        }
-        if (e.getSource() == picker){
-            Date selectedDate = this.picker.getDate();
-            this.selectedDate = dateConvert(selectedDate);
-            try {
-                updateStageMenu();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
             }
         }
     }

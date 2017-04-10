@@ -111,7 +111,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         stmt.close();
         System.out.println("Stmt closed.");
         connection.close();
-        connection = null;
         System.out.println("Connection closed.");
         return sports;
 
