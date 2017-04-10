@@ -24,7 +24,7 @@ public class MainUI {
         JPanel onglet2 = new JPanel();
         onglet2.setPreferredSize(new Dimension(800, 500));
         onglets.addTab("Inscription Stage", onglet2);
-        //onglet2.add(new +(connectionBD));
+        onglet2.add(new InscriptionStageUI(connectionBD));
 
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 500));
@@ -34,7 +34,6 @@ public class MainUI {
         pannel.add(onglets);
         f.getContentPane().add(pannel);
         f.setVisible(true);
-
 
     }
 }
