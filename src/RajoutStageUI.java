@@ -46,11 +46,14 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     Calendar selectedDay;
 
+    //element selected by the user to create SQL statement
     String selectedSport;
     String selectedTerrain;
     int selectedDate;
     int selectedStart;
     int selectedEnd;
+    int[] selectedMonos = {1, 2};
+
 
     public RajoutStageUI(ConnectionBD connectionBD) {
 
@@ -247,6 +250,31 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         String PRE_STMT2 = "select p.nom, p.prenom from PERSONNE p, ESTEXPERTEN e where p.CODEPERSONNE=e.CODEPERSONNE and e.NOMSPORT = 'Athletisme'";
     }
 
+    public void createEntry() throws SQLException {
+        Connection conn = connectionBD.getConnection();
+        String terrain_com = this.selectedTerrain;
+        String terrain = terrain_com.split(" - ")[0];
+        String commune = terrain_com.split(" - ")[1];
+        String PRE_STMT1 = "";
+        Statement stmt;
+        stmt = conn.createStatement(
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_UPDATABLE);
+        for (int code : this.selectedMonos) {
+            PRE_STMT1 = "INSERT into Stage(nomSport, dateStage, heureDebut, heureFin, nomTerrain, Commune, codePersonne) values ";
+            PRE_STMT1 += "('"+ this.selectedSport+"',"
+                    + this.selectedDate + ","
+                    + this.selectedStart + ","
+                    + this.selectedEnd + ","
+                    + "'"+ terrain + "'" + ","
+                    + "'"+ commune + "'" + ","
+                    + code
+                    +")";
+            stmt.executeUpdate(PRE_STMT1);
+        }
+        System.out.println("PRE_STMT1 final = " + PRE_STMT1);
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == sportList){
@@ -294,6 +322,11 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             else {
                 this.selectedStart = open;
                 this.selectedEnd = close;
+                try {
+                    createEntry();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
                 //updateMoniteur();
             }
             this.errorBox.revalidate();
