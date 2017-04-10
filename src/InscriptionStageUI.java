@@ -118,6 +118,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
         return stages;
     }
@@ -141,6 +142,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
         return membres;
     }
@@ -161,6 +163,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
         return sports;
     }
@@ -253,6 +256,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
     }
 
@@ -290,6 +294,7 @@ class InscriptionStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
     }
 }

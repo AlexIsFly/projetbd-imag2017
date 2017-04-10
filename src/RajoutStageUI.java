@@ -2,6 +2,8 @@
 
 //import org.jdesktop.swingx.JXDatePicker;
 
+import org.jdesktop.swingx.JXDatePicker;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -40,7 +42,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     JTextField endMinutes;
     JButton verifyTime;
     JLabel date;
-    //JXDatePicker picker;
+    JXDatePicker picker;
 
     String selectedSport;
     String selectedTerrain;
@@ -49,10 +51,10 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     public RajoutStageUI(ConnectionBD connectionBD) {
 
-        /*this.picker = new JXDatePicker();
+        this.picker = new JXDatePicker();
         this.picker.setDate(Calendar.getInstance().getTime());
         this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
-        this.picker.addActionListener(this);*/
+        this.picker.addActionListener(this);
         this.date = new JLabel("Date");
         this.selectedDay = Calendar.getInstance();
 
@@ -76,7 +78,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-
         try {
             String[] sports = getSportList();
             this.sportList = new JComboBox<String>(sports);
@@ -96,7 +97,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.terrainList);
         add(this.horaireBox);
         add(this.date);
-        //add(this.picker);
+        add(this.picker);
         add(this.stageBox);
         add(this.timeBox);
     }
@@ -117,6 +118,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         stmt.close();
         System.out.println("Stmt closed.");
         connection.close();
+        connection = null;
         System.out.println("Connection closed.");
         return sports;
 
@@ -145,6 +147,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         conn.close();
+        conn = null;
         System.out.println("Connection closed.");
     }
 
@@ -178,6 +181,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         rset.close();
         System.out.println("ResultSet closed.");
         conn.close();
+        conn = null;
         System.out.println("Connection closed.");
         this.horaireBox.removeAll();
         this.horaireBox.add(new JLabel(horaire));
@@ -249,7 +253,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
                 e1.printStackTrace();
             }
         }
-        /*if (e.getSource() == picker){
+        if (e.getSource() == picker){
             Date selectedDate = this.picker.getDate();
             this.selectedDay.setTime(selectedDate);
             System.out.println("selectedDate = " + this.selectedDay.toString());
@@ -258,7 +262,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
-        }*/
+        }
         if (e.getSource() == verifyTime){
         }
     }
