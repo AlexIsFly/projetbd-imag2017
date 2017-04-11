@@ -40,8 +40,9 @@ public class Statistiques extends JPanel{
 		
 		afficheStats();
 		try {
-			con.close();
+			this.con.close();
 			con = null;
+			System.out.println("Connection closed.");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -267,7 +268,7 @@ public class Statistiques extends JPanel{
 				if (encadrement == 0) {
 					return 0;
 				} else {
-					float ratio = supervision/encadrement;
+					float ratio = (float)supervision/encadrement;
 					return ratio;
 				}
 				
