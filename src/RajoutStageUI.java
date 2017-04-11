@@ -181,7 +181,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.openTime = rset.getInt(1);
         this.closeTime = rset.getInt(2);
 
-        String horaire = "Le terrain " + terrain + " est ouvert de " + this.openTime;
+        String horaire = "Le terrain " + terrain + " est ouvert de a " + this.openTime;
 
         horaire += " à " + this.closeTime;
 
@@ -279,7 +279,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         Connection conn = connectionBD.getConnection();
         String PRE_STMT1 = "select iden.codepersonne, iden.nom, iden.prenom from PERSONNE iden, (select distinct form.CODEPERSONNE " +
                 "from ESTFORMEPOUR form, ((select distinct mon.codepersonne from MONITEUR mon) minus " +
-                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = "+ this.selectedDate +" and ((st.HEUREDEBUT<"+ this.selectedEnd +" or st.HEUREFIN>"+this.selectedEnd+") or (st.HEUREDEBUT<"+ this.selectedStart +" or st.HEUREFIN>"+this.selectedStart+")))) cod " +
+                "(select distinct st.CODEPERSONNE from STAGE st where st.DATESTAGE = "+ this.selectedDate +" and ((st.HEUREDEBUT<"+ this.selectedEnd +" and st.HEUREFIN>"+this.selectedEnd+") or (st.HEUREDEBUT<"+ this.selectedStart +" and st.HEUREFIN>"+this.selectedStart+") or (st.HEUREDEBUT="+ this.selectedStart +" and st.HEUREFIN="+this.selectedEnd+")))) cod " +
                 "where form.NOMSPORT='"+ this.selectedSport +"' and form.CODEPERSONNE = cod.codepersonne) codeMon where codeMon.CODEPERSONNE = iden.CODEPERSONNE";
         PreparedStatement stmt = conn.prepareStatement(PRE_STMT1);
         ResultSet rset = stmt.executeQuery();
