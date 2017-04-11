@@ -32,7 +32,7 @@ public class MainUI {
         JPanel onglet3 = new JPanel();
         onglet3.setPreferredSize(new Dimension(800, 600));
         onglets.addTab("Statistiques", onglet3);
-        onglet3.add(new Statistiques(connectionBD));
+        //onglet3.add(new Statistiques(connectionBD));
         
         pannel.add(onglets);
         f.getContentPane().add(pannel);
