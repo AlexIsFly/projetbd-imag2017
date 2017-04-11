@@ -34,6 +34,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
     Box stageBox;
     Box errorBox;
     Box moniteurBox;
+    Box createBox;
     Box errorBox2;
 
     JTextField startHours;
@@ -49,7 +50,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
 
     JList monoList;
     JButton createButton;
-
+    ArrayList stageTimeArray;
     Calendar selectedDay;
 
     //element selected by the user to create SQL statement
@@ -69,7 +70,9 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.errorBox = new Box(BoxLayout.Y_AXIS);
         this.moniteurBox = new Box(BoxLayout.PAGE_AXIS);
         this.errorBox2 = new Box(BoxLayout.LINE_AXIS);
-
+        this.createBox = new Box(BoxLayout.LINE_AXIS);
+        
+        this.stageTimeArray = new ArrayList<>();
         this.picker = new JXDatePicker();
         this.picker.setDate(Calendar.getInstance().getTime());
         this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
@@ -93,6 +96,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         this.createButton = new JButton("Create");
         this.createButton.addActionListener(this);
         this.codeMonos = new ArrayList();
+        this.selectedDate = 010101;
 
         this.connectionBD = connectionBD;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -122,7 +126,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         add(this.timeBox);
         add(this.errorBox);
         add(this.moniteurBox);
-        add(this.createButton);
+        add(this.createBox);
         add(this.errorBox2);
 
     }
@@ -209,16 +213,21 @@ public class RajoutStageUI extends JPanel implements ActionListener {
         aModel.setColumnIdentifiers(tableColumnsName);
         ResultSetMetaData rsmd = rset.getMetaData();
         int colNo = rsmd.getColumnCount();
+        this.stageTimeArray = new ArrayList();
         while(rset.next()){
             int tempdate = rset.getInt(2);
+            System.out.println("tempdate = " + tempdate);
             if (tempdate == dateConvert(this.selectedDay.getTime())) {
                 Object[] objects = new Object[colNo];
                 for(int i=0;i<colNo;i++){
                     objects[i]=rset.getObject(i+1);
                 }
                 aModel.addRow(objects);
+                this.stageTimeArray.add(rset.getInt(3));
+                this.stageTimeArray.add(rset.getInt(4));
             }
         }
+        System.out.println("this.stageTimeArray = " + this.stageTimeArray);
         aTable.setModel(aModel);
         aTable.setPreferredScrollableViewportSize(new Dimension(3,100));
         this.stageBox.removeAll();
@@ -237,8 +246,32 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             this.valid = false;
             return this.valid;
         }
+        if(this.stageTimeArray.isEmpty()){
+            System.out.println("Array Time Stage is empty");
+            return true;
+        }
+        for (int i = 0; i<this.stageTimeArray.size()-1; i++) {
+            int op = (int)this.stageTimeArray.get(i);
+            int cl = (int)this.stageTimeArray.get(i+1);
+            if (open > op && open < cl){
+                this.valid = false;
+                return false;
+            }
+            if (close > op && close < cl){
+                this.valid = false;
+                return false;
+            }
+            if (close == cl && open == op) {
+                this.valid = false;
+                return false;
+            }
+            if (open > close) {
+                this.valid = false;
+                return false;
+            }
+        }
         this.valid = true;
-        return this.valid;
+        return true;
     }
 
 
@@ -344,7 +377,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("PRE_STMT2 final = " + PRE_STMT2);
         }
         conn.commit();
-
         stmt.close();
         conn.close();
         System.out.println("Connection closed.");
@@ -370,6 +402,7 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("Select terrain " + terrainName);
             try {
                 afficheHoraires();
+                afficheStages();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -381,11 +414,6 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             System.out.println("selectedDate = " + this.selectedDay.toString());
             try {
                 afficheStages();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
-            try {
-                updateMoniteur();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -403,6 +431,12 @@ public class RajoutStageUI extends JPanel implements ActionListener {
             else {
                 this.selectedStart = open;
                 this.selectedEnd = close;
+                try {
+                    updateMoniteur();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                this.createBox.add(this.createButton);
             }
             this.errorBox.revalidate();
             this.errorBox.repaint();
@@ -422,12 +456,19 @@ public class RajoutStageUI extends JPanel implements ActionListener {
                 }
             }
             else {
-                JLabel error = new JLabel("Probleme de saisie", JLabel.CENTER);
+                JLabel error = new JLabel("Erreur de saisie", JLabel.CENTER);
                 error.setForeground(Color.RED);
                 this.errorBox2.add(error);
             }
+            this.sportList.setSelectedItem(this.selectedSport);
+            this.createBox.removeAll();
+            this.moniteurBox.removeAll();
+            this.createBox.revalidate();
+            this.createBox.repaint();
             this.errorBox2.revalidate();
             this.errorBox2.repaint();
+            this.moniteurBox.revalidate();
+            this.moniteurBox.repaint();
         }
     }
 
