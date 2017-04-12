@@ -13,24 +13,24 @@ public class MainUI {
         f.setDefaultCloseOperation(EXIT_ON_CLOSE);
         ConnectionBD connectionBD = new ConnectionBD();
 
-        f.setSize(800, 800);
+        f.setSize(1000, 800);
 
         JTabbedPane onglets = new JTabbedPane(SwingConstants.TOP);
 
         JPanel pannel = new JPanel();
 
         JPanel onglet1 = new JPanel();
-        onglet1.setPreferredSize(new Dimension(800, 600));
+        onglet1.setPreferredSize(new Dimension(1000, 600));
         onglets.addTab("Rajout Stage", onglet1);
         onglet1.add(new RajoutStageUI(connectionBD));
 
         JPanel onglet2 = new JPanel();
-        onglet2.setPreferredSize(new Dimension(800, 600));
+        onglet2.setPreferredSize(new Dimension(1000, 600));
         onglets.addTab("Inscription Stage", onglet2);
         onglet2.add(new InscriptionStageUI(connectionBD));
 
         JPanel onglet3 = new JPanel();
-        onglet3.setPreferredSize(new Dimension(800, 600));
+        onglet3.setPreferredSize(new Dimension(1000, 600));
         onglets.addTab("Statistiques", onglet3);
         onglet3.add(new Statistiques(connectionBD));
         
