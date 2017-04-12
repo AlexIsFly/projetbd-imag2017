@@ -289,12 +289,13 @@ public class Statistiques extends JPanel{
 	}
 
 	//Renvoie -1 si erreur
+	
 	private int calculRecettes() throws SQLException {
 		
 		Statement stmt_recettes = null;
 		
 		//La requête doit renvoyer les recettes totales sous forme d'un entier
-		final String recettesStr = "SELECT SUM(tarifStage) FROM Stage st, Sport sp, EstInscritA i WHERE st.nomSport=sp.nomSport and i.codestage=st.codestage and st.datestage>170000 and st.datestage<180000";
+		final String recettesStr = "SELECT SUM(i.prixinscription) FROM Stage st, EstInscritA i WHERE i.codestage=st.codestage and st.datestage>170000 and st.datestage<180000";
 		
 		try {
 			con.setAutoCommit(true);
